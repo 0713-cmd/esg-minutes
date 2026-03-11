@@ -3,145 +3,114 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ESG AI Minutes Master</title>
+    <title>ESG팀 회의록 마스터</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800;900&display=swap');
-        body { font-family: 'Pretendard', sans-serif; background: #F8FAFC; }
-        .minutes-paper { background: #FFFFFF; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1); border-radius: 8px; }
-        .recording-pulse { animation: pulse 1.5s infinite; color: #EF4444; }
-        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+        body { font-family: 'Pretendard', sans-serif; background: #F3F4F6; color: #1E293B; }
+        .edit-mode { outline: 2px solid #3B82F6; background-color: #F0F9FF; border-radius: 4px; padding: 2px; }
+        .minutes-paper { background: #FFFFFF; box-shadow: 0 10px 40px rgba(0,0,0,0.08); }
+        .recording-pulse { animation: pulse 1s infinite; color: #EF4444; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.4; } 100% { opacity: 1; } }
     </style>
 </head>
 <body class="flex h-screen overflow-hidden">
 
-    <aside class="w-80 bg-[#0F172A] p-8 flex flex-col text-slate-300 shadow-2xl">
-        <h1 class="text-2xl font-black text-white mb-10 flex items-center gap-3">
-            <i class="fas fa-brain text-blue-400"></i> ESG AI Master
+    <aside class="w-72 bg-[#0F172A] p-6 flex flex-col text-slate-300">
+        <h1 class="text-xl font-black text-white mb-10 flex items-center gap-2 italic">
+            <i class="fas fa-microchip text-blue-400"></i> ESG AI Master
         </h1>
-        <div class="flex-grow overflow-y-auto space-y-4" id="history-list">
-            <h2 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">History Management</h2>
-            <div class="p-4 bg-slate-800/50 rounded-xl border-l-4 border-blue-500 cursor-pointer">
-                <p class="text-xs font-bold text-white mb-1">240904 상생구매팀 미팅</p>
-                <p class="text-[10px] text-slate-500">2024. 09. 04</p>
+        <div class="flex-grow overflow-y-auto space-y-4">
+            <h2 class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">기록 관리</h2>
+            <div class="p-4 bg-slate-800 rounded-xl border-l-4 border-blue-500 cursor-pointer hover:bg-slate-700 transition-all">
+                <p class="text-xs font-bold text-white mb-1">상생구매팀 미팅 결과</p>
+                <p class="text-[10px] text-slate-500">24.09.04</p>
             </div>
         </div>
-        <div class="mt-auto border-t border-slate-800 pt-6">
-            <button onclick="location.reload()" class="w-full py-4 bg-blue-600 hover:bg-blue-700 text-white rounded-2xl font-black transition-all shadow-lg shadow-blue-900/20">
-                <i class="fas fa-redo-alt mr-2"></i> NEW SESSION
-            </button>
-        </div>
+        <button onclick="location.reload()" class="mt-auto w-full py-3 bg-slate-800 hover:bg-slate-700 rounded-xl font-bold text-sm transition-all border border-slate-700">
+            <i class="fas fa-plus mr-2"></i> 새 세션 시작
+        </button>
     </aside>
 
-    <main class="flex-grow flex flex-col h-full overflow-hidden">
-        <header class="h-24 bg-white border-b border-slate-200 flex items-center justify-between px-12 shadow-sm">
+    <main class="flex-grow flex flex-col bg-white">
+        <header class="h-20 bg-white border-b border-slate-200 flex items-center justify-between px-10">
             <div class="flex gap-4">
-                <button onclick="startRecording()" class="flex items-center gap-3 px-6 py-3 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all border border-slate-200 font-bold text-slate-600">
-                    <i id="mic-icon" class="fas fa-microphone"></i> 실시간 녹음
+                <button id="record-btn" onclick="toggleRecording()" class="flex items-center gap-3 px-6 py-2.5 bg-red-50 hover:bg-red-100 rounded-full transition-all border border-red-100 font-bold text-red-600">
+                    <i id="record-icon" class="fas fa-microphone"></i> <span id="record-text">실시간 녹음 시작</span>
                 </button>
-                <button onclick="document.getElementById('voice-upload').click()" class="flex items-center gap-3 px-6 py-3 bg-slate-50 hover:bg-slate-100 rounded-2xl transition-all border border-slate-200 font-bold text-slate-600">
+                <button onclick="document.getElementById('voice-upload').click()" class="flex items-center gap-3 px-6 py-2.5 bg-slate-100 hover:bg-slate-200 rounded-full transition-all border border-slate-200 font-bold text-slate-600">
                     <i class="fas fa-file-audio"></i> 음성파일 업로드
                     <input type="file" id="voice-upload" class="hidden" accept="audio/*">
                 </button>
-                <button onclick="document.getElementById('doc-upload').click()" class="flex items-center gap-3 px-6 py-3 bg-blue-50 hover:bg-blue-100 rounded-2xl transition-all border border-blue-200 font-bold text-blue-600">
+                <button onclick="document.getElementById('doc-upload').click()" class="flex items-center gap-3 px-6 py-2.5 bg-blue-50 hover:bg-blue-100 rounded-full transition-all border border-blue-100 font-bold text-blue-600">
                     <i class="fas fa-file-word"></i> 워드 & 엑셀 분석
                     <input type="file" id="doc-upload" class="hidden" accept=".docx,.xlsx">
                 </button>
             </div>
             
-            <div id="action-buttons" class="hidden flex gap-3">
-                <button onclick="sendEmail()" class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow-lg shadow-indigo-100"><i class="fas fa-paper-plane mr-2"></i> 메일 발송</button>
-                <button onclick="downloadWord()" class="px-5 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm border border-slate-200"><i class="fas fa-file-word mr-2"></i> Word</button>
-                <button onclick="downloadExcel()" class="px-5 py-2.5 bg-slate-100 text-slate-700 rounded-xl font-bold text-sm border border-slate-200"><i class="fas fa-file-excel mr-2"></i> Excel</button>
-                <button onclick="downloadPDF()" class="px-5 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-sm"><i class="fas fa-file-pdf mr-2"></i> PDF</button>
+            <div id="save-tools" class="hidden flex gap-3">
+                <button onclick="toggleEdit()" id="edit-btn" class="px-5 py-2 bg-amber-500 text-white rounded-lg font-bold text-xs hover:bg-amber-600"><i class="fas fa-edit mr-2"></i> 수정</button>
+                <button onclick="sendEmail()" class="px-5 py-2 bg-indigo-600 text-white rounded-lg font-bold text-xs hover:bg-indigo-700"><i class="fas fa-paper-plane mr-2"></i> 메일 발송</button>
+                <div class="h-8 w-px bg-slate-200 mx-2"></div>
+                <button onclick="exportWord()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-xs border border-slate-200 hover:bg-slate-200">Word</button>
+                <button onclick="exportExcel()" class="px-4 py-2 bg-slate-100 text-slate-600 rounded-lg font-bold text-xs border border-slate-200 hover:bg-slate-200">Excel</button>
+                <button onclick="exportPDF()" class="px-4 py-2 bg-slate-900 text-white rounded-lg font-bold text-xs hover:bg-black">PDF 다운로드</button>
             </div>
         </header>
 
-        <section class="flex-grow overflow-y-auto p-12 bg-slate-50/50">
-            <div id="empty-state" class="h-full flex flex-col items-center justify-center text-slate-300">
-                <i class="fas fa-file-import text-8xl mb-6"></i>
-                <p class="text-2xl font-bold">파일을 업로드하여 심층 분석을 시작하세요</p>
+        <section id="minutes-area" class="flex-grow overflow-y-auto p-12 bg-slate-50 flex justify-center">
+            <div id="empty-msg" class="text-center mt-32">
+                <i class="fas fa-folder-open text-7xl text-slate-200 mb-6"></i>
+                <h2 class="text-2xl font-bold text-slate-400">자료를 선택하거나 녹음을 시작하세요.</h2>
             </div>
 
-            <article id="minutes-content" class="minutes-paper max-w-5xl mx-auto p-20 hidden">
-                <div class="border-b-8 border-slate-900 pb-10 mb-16 relative">
-                    <div class="absolute top-0 right-0 text-[10px] font-black text-slate-200 tracking-widest uppercase">Secret / ESG Internal</div>
-                    <h2 class="text-blue-600 font-black tracking-[0.4em] uppercase text-sm mb-4 italic">Meeting Minutes</h2>
-                    <h1 class="text-4xl font-black text-slate-900 leading-tight">2024 동반성장 밸류업 실무자과정 결과 보고</h1>
+            <article id="capture-area" class="minutes-paper w-full max-w-4xl p-20 hidden">
+                <div class="border-b-4 border-slate-900 pb-10 mb-12">
+                    <p class="text-[10px] font-black text-slate-300 tracking-[0.5em] uppercase mb-4">ESG Internal Report</p>
+                    <h1 id="res-title" class="text-3xl font-black text-slate-900" contenteditable="false">2024 동반성장 밸류업 실무자과정 미팅 결과</h1>
                 </div>
 
-                <div class="grid grid-cols-2 gap-y-6 mb-16 text-sm">
-                    <div class="flex gap-4"><span class="w-24 text-slate-400 font-bold">DATE & TIME</span><span class="font-bold text-slate-800">2024. 09. 04 (수) 13:30</span></div>
-                    <div class="flex gap-4"><span class="w-24 text-slate-400 font-bold">DEPARTMENT</span><span class="font-bold text-slate-800">상생구매팀 / ESG팀</span></div>
-                    <div class="flex gap-4"><span class="w-24 text-slate-400 font-bold">ATTENDEES</span><span class="font-bold text-slate-800">구매실/ESG팀 실무진 (상생구매팀 협력)</span></div>
-                    <div class="flex gap-4"><span class="w-24 text-slate-400 font-bold">LOCATION</span><span class="font-bold text-slate-800">코웨이 본사 대회의실</span></div>
+                <div class="grid grid-cols-2 gap-y-6 mb-12 text-sm border-b border-slate-100 pb-12">
+                    <div class="flex gap-4"><span class="w-20 text-slate-400 font-bold">일시</span><span id="res-date" class="font-bold" contenteditable="false">2024. 09. 04 (수) 13:30</span></div>
+                    <div class="flex gap-4"><span class="w-20 text-slate-400 font-bold">부서</span><span id="res-dept" class="font-bold" contenteditable="false">상생구매팀</span></div>
+                    <div class="flex gap-4"><span class="w-20 text-slate-400 font-bold">참석자</span><span id="res-attendees" class="font-bold bg-amber-50 px-2 rounded" contenteditable="false"></span></div>
+                    <div class="flex gap-4"><span class="w-20 text-slate-400 font-bold">장소</span><span class="font-bold" contenteditable="false">본사 대회의실</span></div>
                 </div>
 
-                <div class="space-y-16">
+                <div class="space-y-12">
                     <section>
-                        <h3 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-3"><span class="w-2 h-7 bg-blue-500 rounded-full"></span> 1. 핵심 분석 요약</h3>
-                        <div class="bg-blue-50/50 p-8 rounded-3xl border border-blue-100 italic text-slate-600 leading-relaxed font-medium">
-                            공급망 ESG 관리 의무화에 따른 파트너사 실무역량 강화 및 평가 프로세스 개정을 주요 안건으로 다룸. 
-                            단순 자가점검을 넘어 현장점검 기반의 평가 강화와 부적합 업체에 대한 패널티(신규물량 배정 제한) 도입을 검토함.
+                        <h3 class="text-lg font-black text-slate-900 mb-4 flex items-center gap-3"><span class="w-1 h-5 bg-blue-500"></span> 1. 회의 요약</h3>
+                        <p id="res-summary" class="text-slate-600 leading-relaxed font-medium pl-4" contenteditable="false">
+                            공급망 ESG 관리 의무화에 따라 파트너사의 실태평가 항목 개정 및 현장점검 기반의 평가 강화 방안을 논의함. 
+                            종합평가 결과 부적합 업체(C등급 이하)에 대한 패널티 및 신규 물량 배정 제한 검토 필요.
+                        </p>
+                    </section>
+
+                    <section>
+                        <h3 class="text-lg font-black text-slate-900 mb-4 flex items-center gap-3"><span class="w-1 h-5 bg-blue-500"></span> 2. 주요 토의 사항</h3>
+                        <div id="res-detail" class="pl-4 space-y-4 text-slate-600 text-sm" contenteditable="false">
+                            <p>• <strong>파트너사 평가 개정:</strong> 현장점검 기반 평가 강화 및 C등급 이하 패널티 부여 검토(TBD).</p>
+                            <p>• <strong>공급망 리스크:</strong> 9월부터 파트너사 대상 공급망 뉴스레터 공유를 통한 리스크 공감대 형성.</p>
+                            <p>• <strong>글로벌 트렌드:</strong> 탄소배출 순제로, 그린워싱 처벌 등 글로벌 규제 대응을 위한 구매 규정 개정 논의.</p>
+                            <p>• <strong>인권 이슈:</strong> 인사팀 협력을 통해 공급망 내 아동노동 이슈 등 인권 규정 수립 논의.</p>
                         </div>
                     </section>
 
                     <section>
-                        <h3 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-3"><span class="w-2 h-7 bg-blue-500 rounded-full"></span> 2. 주요 논의 및 결정 사항</h3>
-                        <div class="space-y-8 pl-5">
-                            <div>
-                                <h4 class="font-black text-slate-800 mb-3">■ 파트너사 종합 평가 개정</h4>
-                                <ul class="list-disc pl-5 text-slate-600 space-y-2 text-sm">
-                                    <li>현장점검 기반 ESG 평가 항목 개정 및 강화</li>
-                                    <li><strong>C등급 이하 패널티 부여:</strong> 신규 물량 배정 제한 등 검토 중</li>
-                                    <li>신규업체 등록 시 'Environmental' 항목 반영 및 S/G 항목 추가 검토</li>
-                                </ul>
-                            </div>
-                            <div>
-                                <h4 class="font-black text-slate-800 mb-3">■ 공급망 인권 및 리스크 관리</h4>
-                                <ul class="list-disc pl-5 text-slate-600 space-y-2 text-sm">
-                                    <li>인권규정 수립 시 <strong>공급망 아동노동 이슈</strong> 포함 논의 (인사팀 협력)</li>
-                                    <li>중대성 평가를 통한 핵심 리스크 선별 관리 강조</li>
-                                    <li>ISO 26000 7원칙 중 '설명책임' 시스템 고도화 필요</li>
-                                </ul>
-                            </div>
-                        </div>
-                    </section>
-
-                    <section>
-                        <h3 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-3"><span class="w-2 h-7 bg-blue-500 rounded-full"></span> 3. 글로벌 ESG 트렌드 대응</h3>
-                        <div class="overflow-hidden rounded-2xl border border-slate-200">
-                            <table class="w-full text-sm text-center">
-                                <thead class="bg-slate-900 text-white">
-                                    <tr><th class="p-4">주요 트렌드</th><th class="p-4">대응 방안</th></tr>
+                        <h3 class="text-lg font-black text-slate-900 mb-4 flex items-center gap-3"><span class="w-1 h-5 bg-blue-500"></span> 3. 실행 과제</h3>
+                        <div class="overflow-hidden rounded-xl border border-slate-200">
+                            <table class="w-full text-xs">
+                                <thead class="bg-slate-50 border-b border-slate-200">
+                                    <tr><th class="p-3 text-left">과제명</th><th class="p-3 text-center">담당</th><th class="p-3 text-center">기한</th></tr>
                                 </thead>
-                                <tbody class="divide-y divide-slate-100 text-slate-600">
-                                    <tr><td class="p-4 font-bold bg-slate-50">탄소배출 순제로</td><td class="p-4">공급망 탄소 데이터 수집 체계 구축</td></tr>
-                                    <tr><td class="p-4 font-bold bg-slate-50">그린워싱 방지</td><td class="p-4">ESG 자가점검 증빙 검증 강화</td></tr>
-                                    <tr><td class="p-4 font-bold bg-slate-50">거버넌스 융합</td><td class="p-4">글로벌 표준(ISO 등) 기반 구매 규정 개정</td></tr>
+                                <tbody id="res-table" class="divide-y divide-slate-100" contenteditable="false">
+                                    <tr><td class="p-3">신규업체 등록 'E'항목 반영 검토</td><td class="p-3 text-center">구매실</td><td class="p-3 text-center font-bold">~9월</td></tr>
+                                    <tr><td class="p-3">공급망 인권규정 아동노동 항목 추가</td><td class="p-3 text-center">ESG팀</td><td class="p-3 text-center font-bold">~12월</td></tr>
                                 </tbody>
                             </table>
-                        </div>
-                    </section>
-
-                    <section>
-                        <h3 class="text-xl font-black text-slate-900 mb-6 flex items-center gap-3"><span class="w-2 h-7 bg-blue-500 rounded-full"></span> 4. Action Items</h3>
-                        <div class="grid grid-cols-3 gap-6">
-                            <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                                <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Task</p>
-                                <p class="font-bold text-slate-800">공급망 뉴스레터 발행</p>
-                            </div>
-                            <div class="p-6 bg-slate-50 rounded-2xl border border-slate-100">
-                                <p class="text-[10px] font-black text-slate-400 uppercase mb-2">Owner</p>
-                                <p class="font-bold text-slate-800">상생구매팀</p>
-                            </div>
-                            <div class="p-6 bg-blue-50 rounded-2xl border border-blue-100">
-                                <p class="text-[10px] font-black text-blue-400 uppercase mb-2">Due Date</p>
-                                <p class="font-black text-blue-600 italic">2024. 09 (차기 협업)</p>
-                            </div>
                         </div>
                     </section>
                 </div>
@@ -150,56 +119,108 @@
     </main>
 
     <script>
-        // 분석 프로세스 실행
-        function processFile() {
-            document.getElementById('empty-state').classList.add('hidden');
-            document.getElementById('minutes-content').classList.remove('hidden');
-            document.getElementById('action-buttons').classList.remove('hidden');
-            alert("구글 AI 엔진이 워드 파일을 심층 분석 완료하였습니다.");
-        }
+        let isRecording = false;
+        let mediaRecorder;
+        let audioChunks = [];
+        let isEditing = false;
 
-        document.getElementById('doc-upload').onchange = processFile;
-        document.getElementById('voice-upload').onchange = processFile;
+        // 실시간 녹음 기능
+        async function toggleRecording() {
+            const btn = document.getElementById('record-btn');
+            const icon = document.getElementById('record-icon');
+            const text = document.getElementById('record-text');
 
-        // 메일 발송 로직
-        function sendEmail() {
-            const email = prompt("회의록을 발송할 이메일 주소를 입력하세요:", "coway_esg@coway.com");
-            if(email) {
-                const subject = encodeURIComponent("[회의록] 2024 동반성장 밸류업 실무자과정 결과");
-                const body = encodeURIComponent("상생구매팀 협업 미팅 결과 보고입니다.\n\n주요내용: 파트너사 ESG 자가점검 강화 및 공급망 인권 이슈 대응\n\n상세내용은 첨부파일을 확인해주시기 바랍니다.");
-                window.location.href = `mailto:${email}?subject=${subject}&body=${body}`;
-                alert(email + " 주소로 메일 발송 창을 연결합니다.");
+            if (!isRecording) {
+                try {
+                    const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+                    mediaRecorder = new MediaRecorder(stream);
+                    mediaRecorder.ondataavailable = (e) => audioChunks.push(e.data);
+                    mediaRecorder.onstop = () => {
+                        alert("녹음이 완료되었습니다. AI 분석을 시작합니다.");
+                        showResult();
+                    };
+                    mediaRecorder.start();
+                    isRecording = true;
+                    btn.classList.add('recording-pulse');
+                    text.innerText = "녹음 종료 및 분석";
+                } catch (err) {
+                    alert("마이크 접근 권한이 필요합니다.");
+                }
+            } else {
+                mediaRecorder.stop();
+                isRecording = false;
+                btn.classList.remove('recording-pulse');
+                text.innerText = "실시간 녹음 시작";
             }
         }
 
-        // 다운로드 로직
-        function downloadPDF() {
-            const element = document.getElementById('minutes-content');
-            html2pdf().from(element).save('240904_ESG_Minutes.pdf');
+        // 결과 화면 표시
+        function showResult() {
+            document.getElementById('empty-msg').classList.add('hidden');
+            document.getElementById('capture-area').classList.remove('hidden');
+            document.getElementById('save-tools').classList.remove('hidden');
         }
 
-        function downloadWord() {
-            const content = document.getElementById('minutes-content').innerText;
-            const blob = new Blob(['\ufeff' + content], { type: 'application/msword' });
-            const link = document.createElement('a');
-            link.href = URL.createObjectURL(blob);
-            link.download = "240904_ESG_Minutes.doc";
-            link.click();
+        document.getElementById('doc-upload').onchange = showResult;
+        document.getElementById('voice-upload').onchange = showResult;
+
+        // 화면 즉시 수정 기능
+        function toggleEdit() {
+            const btn = document.getElementById('edit-btn');
+            const editables = document.querySelectorAll('[contenteditable]');
+            isEditing = !isEditing;
+
+            editables.forEach(el => {
+                el.contentEditable = isEditing;
+                el.classList.toggle('edit-mode', isEditing);
+            });
+
+            btn.innerHTML = isEditing ? '<i class="fas fa-check mr-2"></i> 완료' : '<i class="fas fa-edit mr-2"></i> 수정';
+            btn.className = isEditing ? 'px-5 py-2 bg-green-600 text-white rounded-lg font-bold text-xs' : 'px-5 py-2 bg-amber-500 text-white rounded-lg font-bold text-xs';
         }
 
-        function downloadExcel() {
+        // 메일 발송
+        function sendEmail() {
+            const addr = prompt("발송할 이메일 주소를 입력하세요:", "coway_esg@coway.com");
+            if(addr) {
+                const title = document.getElementById('res-title').innerText;
+                const body = "금일 미팅 결과 공유드립니다.\n\n주요 내용: " + document.getElementById('res-summary').innerText;
+                window.location.href = `mailto:${addr}?subject=[회의록] ${encodeURIComponent(title)}&body=${encodeURIComponent(body)}`;
+            }
+        }
+
+        // 글자 깨짐 방지 다운로드 (UTF-8 BOM 추가)
+        function exportWord() {
+            const content = document.getElementById('capture-area').innerHTML;
+            const blob = new Blob(['\ufeff', content], { type: 'application/msword' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url; a.download = 'ESG_회의록.doc'; a.click();
+        }
+
+        function exportExcel() {
             const wb = XLSX.utils.book_new();
-            const ws = XLSX.utils.aoa_to_sheet([["항목", "내용"], ["회의명", "동반성장 밸류업"], ["일자", "24.09.04"], ["주요결정", "C등급 패널티 도입"]]);
-            XLSX.utils.book_append_sheet(wb, ws, "MeetingMinutes");
-            XLSX.writeFile(wb, "ESG_Minutes_Data.xlsx");
+            const data = [
+                ["항목", "내용"],
+                ["회의명", document.getElementById('res-title').innerText],
+                ["일시", document.getElementById('res-date').innerText],
+                ["요약", document.getElementById('res-summary').innerText]
+            ];
+            const ws = XLSX.utils.aoa_to_sheet(data);
+            XLSX.utils.book_append_sheet(wb, ws, "회의록데이터");
+            XLSX.writeFile(wb, "ESG_회의록_데이터.xlsx");
         }
 
-        function startRecording() {
-            const mic = document.getElementById('mic-icon');
-            mic.classList.toggle('recording-pulse');
-            mic.classList.toggle('fa-stop');
-            alert(mic.classList.contains('recording-pulse') ? "실시간 회의 녹음을 시작합니다." : "녹음을 종료하고 분석을 시작합니다.");
-            if(!mic.classList.contains('recording-pulse')) processFile();
+        function exportPDF() {
+            const element = document.getElementById('capture-area');
+            const opt = {
+                margin: 0,
+                filename: 'ESG_회의록_최종.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 3, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
         }
     </script>
 </body>
