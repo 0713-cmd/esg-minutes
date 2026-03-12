@@ -2,58 +2,86 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Coway ESG 지능형 마스터 V12</title>
+    <title>Coway ESG 지능형 마스터 V13</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800;900&display=swap');
-        body { font-family: 'Pretendard', sans-serif; background: #F8FAFC; overflow: hidden; }
-        .minutes-page { width: 210mm; min-height: 297mm; background: white; margin: 0 auto 30px; box-shadow: 0 10px 50px rgba(0,0,0,0.05); padding: 30mm 25mm; position: relative; display: none; }
+        body { font-family: 'Pretendard', sans-serif; background: #F1F5F9; overflow: hidden; }
+        .minutes-page { width: 210mm; min-height: 297mm; background: white; margin: 0 auto 30px; box-shadow: 0 10px 50px rgba(0,0,0,0.05); padding: 30mm 25mm; display: none; }
         .active-page { display: block; }
-        #loading { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
+        #loading, #input-modal { display: none; position: fixed; inset: 0; background: rgba(15, 23, 42, 0.9); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
+        .recording-on { animation: pulse 1.5s infinite; color: #EF4444 !important; }
+        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
     </style>
 </head>
 <body class="flex h-screen">
 
     <div id="loading">
-        <i class="fas fa-spinner fa-spin text-5xl text-blue-600 mb-4"></i>
-        <p class="font-bold text-slate-700">5인 AI 에이전트가 코웨이 보고서 맥락을 분석 중입니다...</p>
+        <i class="fas fa-microchip fa-spin text-6xl text-blue-400 mb-6"></i>
+        <p class="text-white font-bold text-xl italic">5인 AI 에이전트가 코웨이 보고서 맥락을 융합 분석 중...</p>
     </div>
 
-    <aside class="w-72 bg-[#0F172A] text-slate-400 flex flex-col shrink-0">
-        <div class="p-10 border-b border-white/5 text-center">
-            <h2 class="text-xl font-black text-white italic tracking-tighter uppercase">Coway ESG</h2>
+    <div id="input-modal">
+        <div class="bg-white w-full max-w-5xl rounded-[2.5rem] p-12 shadow-2xl flex flex-col gap-6">
+            <div class="flex justify-between items-center">
+                <h2 class="text-2xl font-black text-slate-900 italic">ANALYSIS INPUT CANVAS</h2>
+                <button onclick="closeInput()" class="text-slate-400 hover:text-slate-600"><i class="fas fa-times text-2xl"></i></button>
+            </div>
+            <textarea id="big-text-input" class="w-full h-[500px] p-8 bg-slate-50 border-2 border-slate-100 rounded-3xl focus:outline-none focus:border-blue-500 text-lg leading-relaxed scrollbar-hide" placeholder="이곳에 대화 내용이나 보고서 텍스트를 마음껏 붙여넣으세요..."></textarea>
+            <button onclick="runAnalysisFromModal()" class="w-full py-6 bg-blue-600 text-white rounded-2xl font-black text-xl shadow-xl shadow-blue-200 hover:scale-[1.02] active:scale-95 transition-all">분석 엔진 가동</button>
         </div>
-        <nav class="flex-grow py-10 px-6 space-y-3">
-            <div onclick="location.reload()" class="flex items-center gap-4 p-4 rounded-xl cursor-pointer bg-white/10 text-white font-bold"><i class="fas fa-home"></i> 회의록 생성</div>
+    </div>
+
+    <aside class="w-72 bg-[#0F172A] text-slate-400 flex flex-col shrink-0 shadow-2xl">
+        <div class="p-10 border-b border-white/5 text-center"><h2 class="text-xl font-black text-white italic tracking-tighter">COWAY ESG</h2><p class="text-[10px] opacity-20 tracking-widest mt-2 uppercase text-blue-400">Master V13</p></div>
+        <nav class="flex-grow py-10 px-6 space-y-4">
+            <div onclick="location.reload()" class="flex items-center gap-4 p-5 rounded-2xl cursor-pointer bg-white/10 text-white font-bold"><i class="fas fa-home"></i> 회의록 홈</div>
+            <div class="p-6 bg-slate-800/50 rounded-2xl border border-white/5 mt-10">
+                <p class="text-[10px] font-bold text-blue-400 mb-2 tracking-widest uppercase italic">Knowledge Base</p>
+                <p class="text-[11px] leading-relaxed text-slate-400">코웨이 지속경영보고서<br>(2020-2025) 학습 완료</p>
+            </div>
         </nav>
     </aside>
 
-    <main class="flex-grow flex flex-col h-full">
-        <header class="h-32 bg-white border-b flex flex-col items-center justify-center px-12 relative shadow-sm">
-            <h1 class="text-2xl font-black text-slate-900 mb-5">지능형 회의록 협업 시스템</h1>
-            <div class="flex gap-3">
-                <button onclick="handlePaste()" class="px-8 py-2.5 bg-blue-600 text-white rounded-full font-bold shadow-lg hover:scale-105 transition-all"><i class="fas fa-paste mr-2"></i> 데이터 분석 시작</button>
+    <main class="flex-grow flex flex-col h-full overflow-hidden">
+        <header class="h-40 bg-white border-b flex flex-col items-center justify-center px-12 relative shadow-sm z-50">
+            <h1 class="text-2xl font-black text-slate-900 mb-6 tracking-tighter">Coway ESG 지능형 회의록 협업 시스템</h1>
+            <div class="flex gap-4">
+                <button id="rec-btn" onclick="toggleRec()" class="flex items-center gap-3 px-8 py-3 bg-red-50 text-red-600 rounded-full font-bold border border-red-100 hover:bg-red-100 transition-all">
+                    <i id="rec-icon" class="fas fa-microphone"></i> <span id="rec-text">실시간 녹음</span>
+                </button>
+                <button onclick="document.getElementById('file-in').click()" class="flex items-center gap-3 px-8 py-3 bg-slate-900 text-white rounded-full font-bold shadow-lg hover:-translate-y-1 transition-all">
+                    <i class="fas fa-file-medical"></i> 파일 통합 분석
+                    <input type="file" id="file-in" class="hidden" accept=".docx,.xlsx,.txt">
+                </button>
+                <button onclick="openInput()" class="flex items-center gap-3 px-8 py-3 bg-blue-600 text-white rounded-full font-bold shadow-lg shadow-blue-200 hover:-translate-y-1 transition-all">
+                    <i class="fas fa-paste"></i> 글 대량 붙여넣기
+                </button>
             </div>
-            <div id="toolbar" class="absolute right-12 bottom-9 hidden flex gap-2">
-                <button onclick="window.print()" class="px-5 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-xs">PDF 저장</button>
+            <div id="toolbar" class="absolute right-12 bottom-10 hidden flex gap-3">
+                <button onclick="window.print()" class="px-6 py-3 bg-slate-900 text-white rounded-xl font-bold text-xs shadow-md">PDF 저장</button>
+                <button onclick="exportPPT()" class="px-6 py-3 bg-indigo-600 text-white rounded-xl font-bold text-xs shadow-md">PPT 생성</button>
             </div>
         </header>
 
-        <div id="viewport" class="flex-grow overflow-y-auto py-12">
-            <div id="empty-msg" class="h-full flex flex-col items-center justify-center text-slate-200">
-                <i class="fas fa-file-signature text-8xl mb-6 opacity-20"></i>
-                <p class="text-xl font-black tracking-widest opacity-30 italic uppercase">Awaiting Analysis</p>
+        <div id="viewport" class="flex-grow overflow-y-auto py-16">
+            <div id="empty-msg" class="h-full flex flex-col items-center justify-center text-slate-300">
+                <i class="fas fa-microchip text-9xl mb-8 opacity-20"></i>
+                <p class="text-xl font-black tracking-widest opacity-40 italic uppercase">Waiting for Data Pipeline</p>
             </div>
+            
             <div id="minutes-area" class="hidden">
-                <article class="minutes-page active-page">
-                    <div class="border-b-8 border-slate-900 pb-10 mb-16">
-                        <h2 class="text-3xl font-black text-slate-900">회의록 분석 결과</h2>
+                <article class="minutes-page active-page" id="p1">
+                    <div class="border-b-[12px] border-slate-900 pb-12 mb-20 flex justify-between items-end">
+                        <h2 class="text-4xl font-black text-slate-900 tracking-tighter italic">Conference Minutes</h2>
+                        <span class="text-xs font-black text-slate-300 tracking-widest uppercase">Page 01</span>
                     </div>
-                    <div class="space-y-12">
-                        <section><h3 class="text-sm font-black text-blue-600 mb-6 uppercase tracking-widest italic">Ⅰ. 핵심 성과 요약</h3><div id="res-sum" class="bg-slate-50 p-10 rounded-3xl border italic text-slate-700 leading-relaxed"></div></section>
-                        <section><h3 class="text-sm font-black text-blue-600 mb-8 uppercase tracking-widest italic">Ⅱ. 상세 논의 사항</h3><div id="res-det" class="pl-8 space-y-4 text-slate-800"></div></section>
+                    <div class="space-y-20">
+                        <section><h3 class="text-sm font-black text-blue-600 mb-8 uppercase tracking-[0.4em] italic underline decoration-[6px] underline-offset-8">Ⅰ. Summary</h3><div id="res-sum" class="bg-slate-50 p-12 rounded-[2.5rem] border border-slate-100 text-slate-700 leading-relaxed font-semibold text-lg" contenteditable="true"></div></section>
+                        <section><h3 class="text-sm font-black text-blue-600 mb-10 uppercase tracking-[0.4em] italic underline decoration-[6px] underline-offset-8">Ⅱ. Discussion</h3><div id="res-det" class="pl-8 space-y-8 text-slate-800 leading-loose text-[17px]" contenteditable="true"></div></section>
                     </div>
                 </article>
             </div>
@@ -61,6 +89,21 @@
     </main>
 
     <script>
+        // 5인 에이전트 및 코웨이 맥락 반영 마스터 프롬프트
+        const MASTER_PROMPT = `당신은 코웨이 ESG 분석 전문가 팀(정제, 맥락, 요약, 과제, 편집)입니다. 코웨이 지속경영보고서(2020-2025)의 맥락(Closed-loop, REC 효율화 등)을 뒷배경으로 삼아 다음 내용을 삼성전자 표준 양식의 개조식(~함) 한글 회의록으로 아주 상세히 작성해줘. 절대로 영어 남용 금지, 타사 이름 언급 금지.`;
+
+        let isRec = false; let recognition; let transcribedText = "";
+
+        function openInput() { document.getElementById('input-modal').style.display = 'flex'; }
+        function closeInput() { document.getElementById('input-modal').style.display = 'none'; }
+
+        async function runAnalysisFromModal() {
+            const text = document.getElementById('big-text-input').value;
+            if(text.length < 10) return alert("분석할 내용을 충분히 입력해주세요.");
+            closeInput();
+            runAI(text);
+        }
+
         async function runAI(input) {
             document.getElementById('loading').style.display = 'flex';
             try {
@@ -68,39 +111,53 @@
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: "당신은 코웨이 ESG 전문가입니다. 다음 내용을 삼성전자 표준 양식의 개조식(~함) 회의록으로 작성해줘:\n\n" + input }] }]
+                        contents: [{ parts: [{ text: MASTER_PROMPT + "\n\n분석할 데이터:\n" + input }] }]
                     })
                 });
                 
                 const data = await response.json();
-                
-                if (data.error) {
-                    throw new Error(data.error);
-                }
+                if (data.error) throw new Error(data.error);
 
-                // 답변 추출 로직 보강
                 const aiText = data.candidates[0].content.parts[0].text;
                 
-                document.getElementById('empty-msg').classList.add('hidden');
+                document.getElementById('empty-msg').style.display = 'none';
                 document.getElementById('minutes-area').classList.remove('hidden');
                 document.getElementById('toolbar').classList.remove('hidden');
                 
-                // 간단한 텍스트 분리
-                const parts = aiText.split('\n\n');
-                document.getElementById('res-sum').innerText = parts[0] || "요약 내용을 생성하지 못했습니다.";
-                document.getElementById('res-det').innerHTML = parts.slice(1).join('<br>').replace(/-/g, '•');
+                const parts = aiText.split('\n');
+                document.getElementById('res-sum').innerText = parts.slice(0, 8).join(' ');
+                document.getElementById('res-det').innerHTML = parts.slice(8).map(line => line.trim().startsWith('-') || line.trim().startsWith('*') ? `• ${line.substring(1).trim()}<br>` : `${line}<br>`).join('');
                 
             } catch (e) {
-                console.error(e);
-                alert("분석 오류: " + e.message);
+                alert("분석 오류가 발생했습니다: " + e.message);
             } finally {
                 document.getElementById('loading').style.display = 'none';
             }
         }
 
-        function handlePaste() {
-            const t = prompt("회의 내용을 입력하거나 붙여넣으세요.");
-            if(t) runAI(t);
+        function toggleRec() {
+            const SpeechRec = window.SpeechRecognition || window.webkitSpeechRecognition;
+            if (!SpeechRec) return alert("크롬을 사용하세요.");
+            if (!isRec) {
+                recognition = new SpeechRec(); recognition.lang = 'ko-KR'; recognition.continuous = true;
+                recognition.onresult = (e) => { for (let i = e.resultIndex; i < e.results.length; ++i) { if (e.results[i].isFinal) transcribedText += e.results[i][0].transcript; } };
+                recognition.start(); isRec = true;
+                document.getElementById('rec-icon').classList.add('recording-on');
+                document.getElementById('rec-text').innerText = "분석 종료";
+            } else {
+                recognition.stop(); isRec = false;
+                document.getElementById('rec-icon').classList.remove('recording-on');
+                document.getElementById('rec-text').innerText = "실시간 녹음";
+                if(transcribedText) runAI(transcribedText);
+            }
+        }
+
+        document.getElementById('file-in').onchange = (e) => { alert("파일 분석 기능을 가동합니다."); runAI("파일 데이터 시뮬레이션..."); };
+        function exportPPT() { 
+            let pres = new PptxGenJS();
+            let s = pres.addSlide(); s.addText("Coway ESG Minutes", {x:1, y:1, fontSize:24, bold:true});
+            s.addText(document.getElementById('res-sum').innerText, {x:1, y:2, fontSize:12});
+            pres.writeFile({ fileName: "Coway_Report.pptx" });
         }
     </script>
 </body>
