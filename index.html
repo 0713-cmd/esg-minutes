@@ -5,65 +5,55 @@
     <title>Coway ESG 지능형 마스터 V12</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/pptxgenjs@3.12.0/dist/pptxgen.bundle.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Pretendard:wght@400;600;700;800;900&display=swap');
         body { font-family: 'Pretendard', sans-serif; background: #F8FAFC; overflow: hidden; }
         .minutes-page { width: 210mm; min-height: 297mm; background: white; margin: 0 auto 30px; box-shadow: 0 10px 50px rgba(0,0,0,0.05); padding: 30mm 25mm; position: relative; display: none; }
         .active-page { display: block; }
-        .edit-active { outline: 3px solid #3B82F6 !important; background: #F0F7FF !important; }
-        .recording-on { animation: pulse 1.5s infinite; color: #EF4444 !important; }
-        @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.3; } 100% { opacity: 1; } }
-        #loading { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.8); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
+        #loading { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
     </style>
 </head>
 <body class="flex h-screen">
 
     <div id="loading">
-        <i class="fas fa-circle-notch fa-spin text-5xl text-blue-600 mb-4"></i>
-        <p class="font-bold">5인 AI 에이전트가 협업 분석 중입니다...</p>
+        <i class="fas fa-spinner fa-spin text-5xl text-blue-600 mb-4"></i>
+        <p class="font-bold text-slate-700">5인 AI 에이전트가 코웨이 보고서 맥락을 분석 중입니다...</p>
     </div>
 
     <aside class="w-72 bg-[#0F172A] text-slate-400 flex flex-col shrink-0">
         <div class="p-10 border-b border-white/5 text-center">
-            <h2 class="text-xl font-black text-white italic tracking-tighter">COWAY ESG</h2>
+            <h2 class="text-xl font-black text-white italic tracking-tighter uppercase">Coway ESG</h2>
         </div>
         <nav class="flex-grow py-10 px-6 space-y-3">
-            <div onclick="location.reload()" class="flex items-center gap-4 p-4 rounded-xl cursor-pointer hover:text-white transition-all bg-white/10 text-white font-bold"><i class="fas fa-file-invoice"></i> 회의록 생성</div>
-            <div class="p-4 text-[10px] italic opacity-30">Vercel 마스터 키 자동 연동 모드</div>
+            <div onclick="location.reload()" class="flex items-center gap-4 p-4 rounded-xl cursor-pointer bg-white/10 text-white font-bold"><i class="fas fa-home"></i> 회의록 생성</div>
         </nav>
     </aside>
 
-    <main class="flex-grow flex flex-col h-full relative">
-        <header class="h-32 bg-white border-b border-slate-100 flex flex-col items-center justify-center relative shadow-sm z-40 px-12">
+    <main class="flex-grow flex flex-col h-full">
+        <header class="h-32 bg-white border-b flex flex-col items-center justify-center px-12 relative shadow-sm">
             <h1 class="text-2xl font-black text-slate-900 mb-5">지능형 회의록 협업 시스템</h1>
-            <div class="flex items-center gap-3">
-                <button id="rec-btn" onclick="toggleRec()" class="flex items-center gap-3 px-8 py-2.5 bg-red-50 text-red-600 rounded-full font-bold border border-red-100"><i id="rec-icon" class="fas fa-microphone"></i> <span id="rec-text">실시간 녹음</span></button>
-                <button onclick="document.getElementById('file-in').click()" class="flex items-center gap-3 px-8 py-2.5 bg-blue-600 text-white rounded-full font-bold shadow-lg shadow-blue-200"><i class="fas fa-upload"></i> 파일 분석</button>
-                <input type="file" id="file-in" class="hidden" accept=".docx,.xlsx,.txt">
-                <button onclick="handlePaste()" class="px-6 py-2.5 bg-slate-100 text-slate-600 rounded-full font-bold border border-slate-200"><i class="fas fa-paste"></i> 글 붙여넣기</button>
+            <div class="flex gap-3">
+                <button onclick="handlePaste()" class="px-8 py-2.5 bg-blue-600 text-white rounded-full font-bold shadow-lg hover:scale-105 transition-all"><i class="fas fa-paste mr-2"></i> 데이터 분석 시작</button>
             </div>
             <div id="toolbar" class="absolute right-12 bottom-9 hidden flex gap-2">
-                <button id="edit-btn" onclick="toggleEdit()" class="px-5 py-2.5 bg-amber-500 text-white rounded-xl font-bold text-xs">수정</button>
-                <button onclick="exportPDF()" class="px-5 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-xs">PDF</button>
-                <button onclick="exportPPT()" class="px-5 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-xs">PPT</button>
+                <button onclick="window.print()" class="px-5 py-2.5 bg-slate-900 text-white rounded-xl font-bold text-xs">PDF 저장</button>
             </div>
         </header>
 
         <div id="viewport" class="flex-grow overflow-y-auto py-12">
-            <div id="empty" class="h-full flex flex-col items-center justify-center text-slate-200">
-                <i class="fas fa-robot text-8xl mb-6 opacity-20"></i>
-                <p class="text-xl font-black tracking-widest uppercase opacity-30 italic">Ready to analyze</p>
+            <div id="empty-msg" class="h-full flex flex-col items-center justify-center text-slate-200">
+                <i class="fas fa-file-signature text-8xl mb-6 opacity-20"></i>
+                <p class="text-xl font-black tracking-widest opacity-30 italic uppercase">Awaiting Analysis</p>
             </div>
             <div id="minutes-area" class="hidden">
-                <article class="minutes-page active-page" id="p1">
-                    <div class="border-b-8 border-slate-900 pb-10 mb-16 flex justify-between items-end">
-                        <h2 id="res-title" class="text-3xl font-black text-slate-900">회의록 분석 결과</h2>
+                <article class="minutes-page active-page">
+                    <div class="border-b-8 border-slate-900 pb-10 mb-16">
+                        <h2 class="text-3xl font-black text-slate-900">회의록 분석 결과</h2>
                     </div>
                     <div class="space-y-12">
-                        <section><h3 class="text-sm font-black text-blue-600 mb-6 uppercase tracking-widest">Ⅰ. 핵심 성과 요약</h3><div id="res-sum" class="bg-slate-50 p-10 rounded-3xl border border-slate-100 italic" contenteditable="false"></div></section>
-                        <section><h3 class="text-sm font-black text-blue-600 mb-8 uppercase tracking-widest">Ⅱ. 상세 논의 사항</h3><div id="res-det" class="pl-8 space-y-6" contenteditable="false"></div></section>
+                        <section><h3 class="text-sm font-black text-blue-600 mb-6 uppercase tracking-widest italic">Ⅰ. 핵심 성과 요약</h3><div id="res-sum" class="bg-slate-50 p-10 rounded-3xl border italic text-slate-700 leading-relaxed"></div></section>
+                        <section><h3 class="text-sm font-black text-blue-600 mb-8 uppercase tracking-widest italic">Ⅱ. 상세 논의 사항</h3><div id="res-det" class="pl-8 space-y-4 text-slate-800"></div></section>
                     </div>
                 </article>
             </div>
@@ -71,62 +61,47 @@
     </main>
 
     <script>
-        const MASTER_PROMPT = `차장님의 5인 에이전트 프롬프트 내용을 여기에 입력 (내용이 길어 생략, 실제 코드엔 들어감)`;
-        let isRec = false; let recognition; let transcribedText = "";
-
         async function runAI(input) {
             document.getElementById('loading').style.display = 'flex';
             try {
-                // 이제 구글이 아니라 우리가 만든 '비밀 통로(/api/analyze)'로 보냅니다!
                 const response = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: MASTER_PROMPT + "\n\n데이터:\n" + input }] }]
+                        contents: [{ parts: [{ text: "당신은 코웨이 ESG 전문가입니다. 다음 내용을 삼성전자 표준 양식의 개조식(~함) 회의록으로 작성해줘:\n\n" + input }] }]
                     })
                 });
+                
                 const data = await response.json();
+                
+                if (data.error) {
+                    throw new Error(data.error);
+                }
+
+                // 답변 추출 로직 보강
                 const aiText = data.candidates[0].content.parts[0].text;
                 
-                document.getElementById('empty').classList.add('hidden');
+                document.getElementById('empty-msg').classList.add('hidden');
                 document.getElementById('minutes-area').classList.remove('hidden');
                 document.getElementById('toolbar').classList.remove('hidden');
-                document.getElementById('res-sum').innerText = aiText.substring(0, 500);
-                document.getElementById('res-det').innerHTML = aiText.substring(500).replace(/\n/g, '<br>');
+                
+                // 간단한 텍스트 분리
+                const parts = aiText.split('\n\n');
+                document.getElementById('res-sum').innerText = parts[0] || "요약 내용을 생성하지 못했습니다.";
+                document.getElementById('res-det').innerHTML = parts.slice(1).join('<br>').replace(/-/g, '•');
+                
             } catch (e) {
-                alert("분석 중 오류가 발생했습니다. 버셀 설정을 확인하세요.");
+                console.error(e);
+                alert("분석 오류: " + e.message);
             } finally {
                 document.getElementById('loading').style.display = 'none';
             }
         }
 
-        function toggleRec() {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if (!SpeechRecognition) return alert("크롬 브라우저를 사용하세요.");
-            if (!isRec) {
-                recognition = new SpeechRecognition(); recognition.lang = 'ko-KR'; recognition.continuous = true;
-                recognition.onresult = (e) => { for (let i = e.resultIndex; i < e.results.length; ++i) { if (e.results[i].isFinal) transcribedText += e.results[i][0].transcript; } };
-                recognition.start(); isRec = true;
-                document.getElementById('rec-icon').classList.add('recording-on');
-                document.getElementById('rec-text').innerText = "분석 종료";
-            } else {
-                recognition.stop(); isRec = false;
-                document.getElementById('rec-icon').classList.remove('recording-on');
-                document.getElementById('rec-text').innerText = "실시간 녹음";
-                if(transcribedText) runAI(transcribedText);
-            }
+        function handlePaste() {
+            const t = prompt("회의 내용을 입력하거나 붙여넣으세요.");
+            if(t) runAI(t);
         }
-        function handlePaste() { const t = prompt("분석할 내용을 붙여넣으세요."); if(t) runAI(t); }
-        document.getElementById('file-in').onchange = (e) => { runAI("파일 분석 요청됨 (텍스트 추출 로직 작동 중...)"); };
-        function toggleEdit() {
-            const isEdit = document.getElementById('res-sum').contentEditable === 'true';
-            document.querySelectorAll('[contenteditable]').forEach(el => el.contentEditable = !isEdit);
-            document.getElementById('edit-btn').innerText = !isEdit ? "완료" : "수정";
-        }
-        function exportPDF() { window.print(); }
-        function exportPPT() { alert("PPT 생성 중..."); }
     </script>
 </body>
 </html>
-
-
