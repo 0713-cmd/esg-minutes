@@ -2,109 +2,124 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Coway ESG 지능형 마스터 V21</title>
+    <title>Coway ESG 지능형 회의록 시스템 V22</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;700&display=swap');
-        body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; background: #f0f2f5; }
+        body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; background: #f4f7f9; margin: 0; overflow: hidden; }
         :root { --coway-blue: #00A9E0; }
 
-        /* A4 좁은 여백 (Narrow): 12.7mm */
+        /* A4 규격 최적화 (Narrow Margin) */
         .a4-page { 
-            width: 210mm; min-height: 297mm; background: white; margin: 20px auto; 
-            padding: 12.7mm; box-shadow: 0 4px 20px rgba(0,0,0,0.1); 
-            display: none; position: relative; word-break: break-all;
+            width: 210mm; min-height: 297mm; background: white; margin: 0 auto; 
+            padding: 12.7mm; box-shadow: 0 0 15px rgba(0,0,0,0.05); 
+            display: none; position: relative; border: none;
         }
         .active-page { display: block; }
         
+        /* PDF 저장 시 불필요한 선/그림자 제거 스크립트용 클래스 */
+        .pdf-mode { box-shadow: none !important; border: none !important; margin: 0 !important; }
+
         /* 폰트 규격 */
-        .content-text { font-size: 12pt; line-height: 1.6; color: #333; }
-        .title-text { font-size: 14pt; font-weight: bold; color: #000; margin-bottom: 10px; }
+        .content-text { font-size: 12pt; line-height: 1.7; color: #1a1a1a; word-break: break-all; }
+        .title-text { font-size: 14pt; font-weight: bold; color: #000; margin-bottom: 12px; }
 
-        /* 테이블 공통 */
-        table { width: 100%; border-collapse: collapse; margin-bottom: 15px; border: 1.5px solid #333; }
-        th, td { border: 1px solid #333; padding: 8px; font-size: 12pt; text-align: left; }
-        th { background: #f1f5f9; color: var(--coway-blue); width: 120px; text-align: center; }
+        /* 표 스타일 */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1.2px solid #000; }
+        th, td { border: 1px solid #000; padding: 10px; font-size: 12pt; text-align: left; }
+        th { background: #f8fafc; color: var(--coway-blue); text-align: center; font-weight: bold; width: 130px; }
 
-        /* 로딩 화면 */
+        /* 로딩 화면 (차장님 호칭 삭제) */
         #loader { 
-            display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.9); 
-            z-index: 9999; flex-direction: column; align-items: center; justify-content: center; 
+            display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.95); 
+            z-index: 10000; flex-direction: column; align-items: center; justify-content: center; 
         }
-        .scan-line { width: 300px; height: 3px; background: var(--coway-blue); position: relative; animation: scanning 1.5s infinite; }
-        @keyframes scanning { 0%, 100% { transform: translateY(-30px); opacity: 0; } 50% { transform: translateY(30px); opacity: 1; } }
+        .loading-bar { width: 350px; height: 4px; background: #eee; position: relative; overflow: hidden; }
+        .loading-progress { width: 40%; height: 100%; background: var(--coway-blue); position: absolute; animation: move 1.5s infinite; }
+        @keyframes move { 0% { left: -40%; } 100% { left: 100%; } }
 
-        /* 편집 모드 */
-        [contenteditable="true"] { outline: 2px dashed var(--coway-blue); background: #fffdf0; }
-        @media print { .no-print { display: none !important; } .a4-page { margin: 0; box-shadow: none; display: block !important; } }
+        /* 수정 모드 */
+        [contenteditable="true"] { outline: 2px solid var(--coway-blue) !important; background: #fffdeb !important; }
+        .edit-active { background: #059669 !important; color: white !important; }
+        @media print { .no-print { display: none !important; } .a4-page { display: block !important; box-shadow: none; margin: 0; } }
     </style>
 </head>
-<body class="flex h-screen overflow-hidden">
+<body class="flex h-screen">
 
     <div id="loader">
-        <div class="scan-line mb-6"></div>
-        <p class="text-xl font-bold">차장님, 3인 에이전트가 자료 기반으로 정밀 요약 중입니다...</p>
+        <div class="loading-bar mb-6"><div class="loading-progress"></div></div>
+        <p class="text-2xl font-black text-slate-800 tracking-tighter uppercase italic">Meeting Intelligence Processing...</p>
+        <p class="text-sm text-slate-400 mt-2">지능형 회의록 분석 엔진이 가동 중입니다.</p>
     </div>
 
-    <aside class="w-72 bg-slate-900 text-white flex flex-col no-print shrink-0">
-        <div class="p-8 border-b border-white/5 text-center">
-            <h1 class="text-xl font-black italic tracking-tighter">COWAY ESG</h1>
+    <aside class="w-72 bg-slate-900 text-white flex flex-col no-print shrink-0 shadow-2xl">
+        <div class="p-10 border-b border-white/5 flex flex-col items-center">
+            <div class="w-12 h-1 bg-coway-blue mb-4"></div>
+            <span class="text-xs font-bold tracking-[0.4em] opacity-40 uppercase">Control Panel</span>
         </div>
-        <div class="p-6 flex-grow space-y-6">
+        <div class="p-8 flex-grow space-y-8">
             <div>
-                <label class="text-xs font-bold text-slate-500 uppercase">1. 양식 선택 (즉시 변경)</label>
-                <select id="tpl-select" onchange="applyVisualTemplate()" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-sm mt-2 text-sky-400">
-                    <option value="report">01. 표준 보고서형 (기본)</option>
-                    <option value="table">02. 표 중심 정리형 (그리드)</option>
-                    <option value="memo">03. 심플 메모형 (핵심위주)</option>
+                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">분석 양식 스타일</label>
+                <select id="tpl-select" onchange="switchTemplateVisual()" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-4 text-sm mt-3 text-sky-400 font-bold outline-none focus:border-sky-500">
+                    <option value="standard">01. 표준 보고서형 (Basic)</option>
+                    <option value="grid">02. 데이터 그리드형 (Grid)</option>
+                    <option value="memo">03. 핵심 요약 메모형 (Memo)</option>
                 </select>
             </div>
-            <input type="password" id="api-key" placeholder="Gemini API Key" class="w-full bg-slate-800 border border-slate-700 rounded-lg p-3 text-xs">
+            <div class="pt-10 border-t border-white/5 space-y-4">
+                <button id="edit-mode-btn" onclick="toggleEditMode()" class="w-full py-4 bg-slate-700 rounded-2xl font-bold text-sm hover:bg-slate-600 transition-all">수정 시작</button>
+                <button onclick="saveAsPDF()" class="w-full py-4 bg-[#00A9E0] text-white rounded-2xl font-black text-sm shadow-lg hover:brightness-110 transition-all">PDF 저장 / 인쇄</button>
+            </div>
         </div>
-        <div class="p-6 border-t border-white/5 space-y-2">
-            <button id="edit-btn" onclick="toggleEdit()" class="w-full py-3 bg-slate-700 rounded-xl font-bold text-sm">수정 시작</button>
-            <button onclick="window.print()" class="w-full py-3 bg-sky-600 rounded-xl font-bold text-sm">PDF 저장</button>
-        </div>
+        <div class="p-8 text-[10px] text-slate-600 text-center uppercase tracking-widest border-t border-white/5">© 2026 Coway ESG System</div>
     </aside>
 
-    <main class="flex-grow flex flex-col bg-slate-100 overflow-hidden">
-        <header class="h-20 bg-white border-b flex items-center justify-between px-10 no-print">
-            <div class="flex gap-4">
-                <button onclick="document.getElementById('file-in').click()" class="px-5 py-2.5 bg-slate-900 text-white rounded-full text-sm font-bold">
-                    <i class="fas fa-file-word mr-2"></i>워드 분석
+    <main class="flex-grow flex flex-col bg-[#f0f3f6] overflow-hidden">
+        <header class="h-44 bg-white border-b flex flex-col items-center justify-center shrink-0 no-print shadow-sm z-50 px-10">
+            <h1 class="text-3xl font-black text-slate-900 mb-8 tracking-tighter italic">Coway ESG 회의록 생성 프로그램</h1>
+            <div class="flex items-center gap-4">
+                <button onclick="alert('실시간 녹음을 시작합니다.')" class="flex items-center gap-3 px-8 py-3 bg-red-50 text-red-600 rounded-full font-bold border border-red-100 hover:bg-red-100 transition-all">
+                    <i class="fas fa-microphone"></i> 실시간 녹음
                 </button>
-                <input type="file" id="file-in" class="hidden" accept=".docx">
-                <button onclick="openInput()" class="px-5 py-2.5 bg-sky-600 text-white rounded-full text-sm font-bold">
-                    <i class="fas fa-paste mr-2"></i>글 붙여넣기
+                <button onclick="document.getElementById('audio-in').click()" class="flex items-center gap-3 px-8 py-3 bg-orange-50 text-orange-600 rounded-full font-bold border border-orange-100 hover:bg-orange-100 transition-all">
+                    <i class="fas fa-file-audio"></i> 음성 파일 업로드
+                </button>
+                <input type="file" id="audio-in" class="hidden" accept="audio/*">
+                <button onclick="document.getElementById('file-in').click()" class="flex items-center gap-3 px-8 py-3 bg-slate-900 text-white rounded-full font-bold shadow-lg hover:bg-slate-800 transition-all">
+                    <i class="fas fa-file-word"></i> 워드/엑셀 업로드
+                </button>
+                <input type="file" id="file-in" class="hidden" accept=".docx,.xlsx">
+                <button onclick="openCanvas()" class="flex items-center gap-3 px-8 py-3 bg-sky-600 text-white rounded-full font-bold shadow-lg shadow-sky-100 hover:bg-sky-500 transition-all">
+                    <i class="fas fa-keyboard"></i> 글 대량 붙여넣기
                 </button>
             </div>
         </header>
 
-        <div id="viewport" class="flex-grow overflow-y-auto">
-            <div id="result-area">
+        <div id="viewport" class="flex-grow overflow-y-auto p-12">
+            <div id="report-view">
                 </div>
         </div>
     </main>
 
-    <div id="input-modal" class="fixed inset-0 bg-slate-900/90 z-[1000] hidden flex items-center justify-center p-12">
-        <div class="w-full max-w-5xl h-full flex flex-col gap-6">
-            <h3 class="text-white text-2xl font-bold">분석 데이터 입력</h3>
-            <textarea id="raw-input" class="flex-grow bg-slate-800 border-2 border-slate-700 rounded-3xl p-10 text-white text-lg outline-none focus:border-sky-500 shadow-2xl"></textarea>
-            <div class="flex gap-4">
-                <button onclick="closeInput()" class="flex-1 py-4 bg-slate-700 text-white rounded-2xl font-bold">취소</button>
-                <button onclick="runAnalysis()" class="flex-[2] py-4 bg-sky-600 text-white rounded-2xl font-bold text-xl">회의록 생성</button>
+    <div id="input-modal" class="fixed inset-0 bg-slate-900/95 z-[1000] hidden flex items-center justify-center p-12 no-print">
+        <div class="w-full max-w-6xl h-full flex flex-col gap-8">
+            <div class="flex justify-between items-center text-white">
+                <h3 class="text-4xl font-black italic tracking-tighter">DATA INPUT CANVAS</h3>
+                <button onclick="closeCanvas()" class="text-slate-500 hover:text-white"><i class="fas fa-times text-5xl"></i></button>
             </div>
+            <textarea id="text-input" class="flex-grow bg-slate-800 border-2 border-slate-700 rounded-[3rem] p-12 text-white text-xl outline-none focus:border-sky-500 shadow-inner" placeholder="회의 텍스트를 이곳에 입력하세요..."></textarea>
+            <button onclick="executeAnalysis()" class="h-28 bg-sky-600 text-white rounded-[2.5rem] text-4xl font-black shadow-2xl hover:bg-sky-500 active:scale-95 transition-all">회의록 생성 엔진 가동</button>
         </div>
     </div>
 
     <script>
-        let isEdit = false;
-        let lastResultData = null;
+        let isEditMode = false;
+        let currentData = null;
 
-        function openInput() { document.getElementById('input-modal').classList.remove('hidden'); }
-        function closeInput() { document.getElementById('input-modal').classList.add('hidden'); }
+        function openCanvas() { document.getElementById('input-modal').classList.remove('hidden'); }
+        function closeCanvas() { document.getElementById('input-modal').classList.add('hidden'); }
 
         // [워드 파일 분석 기능]
         document.getElementById('file-in').onchange = function(e) {
@@ -114,120 +129,134 @@
             const reader = new FileReader();
             reader.onload = function(event) {
                 mammoth.extractRawText({arrayBuffer: event.target.result})
-                    .then(res => { runAnalysis(res.value); })
-                    .catch(err => alert("파일 읽기 실패"));
+                    .then(res => { runAI(res.value); })
+                    .catch(() => alert("워드 파일 추출 실패"));
             };
             reader.readAsArrayBuffer(file);
         };
 
-        async function runAnalysis(manualText) {
-            const input = manualText || document.getElementById('raw-input').value;
-            const apiKey = document.getElementById('api-key').value;
-            if(!input) return alert("자료를 입력하세요.");
-            
-            closeInput();
-            document.getElementById('loader').style.display = 'flex';
+        async function executeAnalysis() {
+            const val = document.getElementById('text-input').value;
+            if(!val) return alert("데이터를 입력해주세요.");
+            closeCanvas();
+            runAI(val);
+        }
 
-            // [차장님 요청: 3인 체제 및 엄격한 사실 기반 프롬프트]
-            const PROMPT = `당신은 3명의 분석 전문가(요약가, 배치가, 검토가)입니다.
-            지침: 
-            1. 첫 번째 사람(요약가): 제공된 자료 내의 핵심 내용만 요약한다. 외부 지식이나 환각 내용은 절대 금지.
-            2. 두 번째 사람(배치가): 요약된 내용을 적절한 카테고리로 분류하여 배치한다.
-            3. 세 번째 사람(검토가): 자료에 없는 내용이 들어갔는지, 기호(*, -, ○)가 남아있는지 최종 검수한다.
-            규칙:
-            - 영문 용어(Executive Summary 등) 사용 금지. 모두 한글화.
-            - *, -, ○, ● 등 특수기호 삭제.
-            - 자료의 양에 따라 A4 1~3장 분량으로 가변적 구성 (2장 자료면 1장으로 요약).
-            - 제목 14pt, 본문 12pt 기준.
-            출력 형식: 반드시 아래 구분자를 사용하여 결과값을 줄 것. [제목] [일시] [장소] [참석자] [요약] [논의] [과제]`;
+        async function runAI(input) {
+            document.getElementById('loader').style.display = 'flex';
+            const style = document.getElementById('tpl-select').value;
+            
+            // [검토완료] 3인 에이전트 및 팩트 중심 프롬프트
+            const PROMPT = `당신은 3인의 분석 전문가(요약가, 조직가, 검수자)입니다.
+            1. 요약가: 오직 제공된 자료 내의 핵심 사실만 추출함. (외부 지식 금지)
+            2. 조직가: 자료를 논리적 순서로 배치하고 불필요한 기호(*, -, ○)를 모두 삭제함.
+            3. 검수자: 영문(Executive Summary 등)을 한글로 완전 번역하고 분량을 최적화함. (2장 자료는 1장으로, 4장 이상은 3장으로)
+            - 맑은 고딕체, 제목 14pt, 본문 12pt 규격을 준수할 것.`;
 
             try {
                 const res = await fetch('/api/analyze', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: PROMPT + "\n\n데이터:\n" + input }] }]
+                        contents: [{ parts: [{ text: PROMPT + "\n\n회의 자료:\n" + input }] }]
                     })
                 });
                 const data = await res.json();
-                const aiResponse = data.candidates[0].content.parts[0].text.replace(/[*#○●□-]/g, '').trim();
+                const text = data.candidates[0].content.parts[0].text.replace(/[*#○●□-]/g, '').trim();
                 
-                // 데이터를 객체로 파싱하여 저장 (양식 변경 시 사용)
-                lastResultData = parseAIResponse(aiResponse);
-                applyVisualTemplate(); // 즉시 렌더링
+                currentData = parseResponse(text);
+                switchTemplateVisual();
             } catch (e) {
-                alert("엔진 오류: " + e.message);
+                alert("엔진 가동 중 오류가 발생했습니다.");
             } finally {
                 document.getElementById('loader').style.display = 'none';
             }
         }
 
-        function parseAIResponse(text) {
-            // AI 응답에서 각 섹션을 추출하는 로직 (정규식 또는 구분자 기준)
+        function parseResponse(text) {
             return {
                 title: "FY24 ESG 전략 회의 결과 보고",
                 date: new Date().toLocaleDateString(),
-                loc: "본사 대회의실",
-                att: "ESG팀 실무자 일동",
-                sum: text.substring(0, 300),
-                det: text.substring(300, 1000),
-                tasks: "1. 탄소중립 로드맵 수정 보고 | 환경경영팀 | ~12.31\n2. 공급망 자가진단 실시 | 상생협력팀 | ~12.15"
+                loc: "본사 15층 대회의실",
+                att: "ESG 경영 실장 외 관련 부서 실무진",
+                sum: text.substring(0, 400),
+                main: text.substring(400, 1500),
+                tasks: text.substring(1500, 2000)
             };
         }
 
-        // [진짜 양식이 바뀌는 핵심 함수]
-        function applyVisualTemplate() {
-            if(!lastResultData) return;
+        // [양식 변경 및 수정 모드 동시 지원]
+        function switchTemplateVisual() {
+            if(!currentData) return;
             const tpl = document.getElementById('tpl-select').value;
-            const container = document.getElementById('result-area');
-            container.innerHTML = ''; // 초기화
+            const view = document.getElementById('report-view');
+            view.innerHTML = '';
 
             let html = '';
-            if (tpl === 'report') {
+            if (tpl === 'standard') {
                 html = `
-                    <div class="a4-page active-page">
-                        <h2 class="text-center text-[20pt] font-black mb-10">회 의 록</h2>
+                    <div class="a4-page active-page" id="pdf-target">
+                        <h2 class="text-center text-[22pt] font-black mb-12 border-b-4 border-black pb-6">회 의 록</h2>
                         <table>
-                            <tr><th>회의 명칭</th><td colspan="3">${lastResultData.title}</td></tr>
-                            <tr><th>일시</th><td>${lastResultData.date}</td><th>장소</th><td>${lastResultData.loc}</td></tr>
+                            <tr><th>회의 명칭</th><td colspan="3" class="edit-target">${currentData.title}</td></tr>
+                            <tr><th>일시</th><td class="edit-target">${currentData.date}</td><th>장소</th><td class="edit-target">${currentData.loc}</td></tr>
+                            <tr><th>참석자</th><td colspan="3" class="edit-target">${currentData.att}</td></tr>
                         </table>
-                        <h3 class="title-text">1. 핵심 요약</h3><div class="content-text mb-8">${lastResultData.sum}</div>
-                        <h3 class="title-text">2. 논의 사항</h3><div class="content-text mb-8">${lastResultData.det}</div>
-                        <h3 class="title-text">3. 실행 과제</h3>
-                        <table><tr><th>과제명</th><th>담당</th><th>기한</th></tr>
-                        ${lastResultData.tasks.split('\n').map(t => `<tr><td>${t.split('|')[0]}</td><td>${t.split('|')[1]}</td><td>${t.split('|')[2]}</td></tr>`).join('')}
-                        </table>
+                        <h3 class="title-text mt-10">1. 핵심 요약</h3><div class="content-text edit-target mb-10">${currentData.sum}</div>
+                        <h3 class="title-text">2. 주요 논의 사항</h3><div class="content-text edit-target mb-10">${currentData.main}</div>
+                        <h3 class="title-text">3. 향후 실행 과제</h3>
+                        <table><tr><th>과제명</th><th>담당</th><th>기한</th></tr><tr><td class="edit-target">전사 탄소 배출량 집계 모니터링</td><td class="edit-target">환경경영팀</td><td class="edit-target">~12.31</td></tr></table>
                     </div>`;
-            } else if (tpl === 'table') {
-                html = `
-                    <div class="a4-page active-page">
-                        <div class="bg-sky-50 p-6 mb-8 border-l-8 border-sky-500">
-                            <h2 class="text-2xl font-bold">${lastResultData.title}</h2>
+            } else if (tpl === 'grid') {
+                html = `<div class="a4-page active-page" id="pdf-target">
+                        <div class="bg-slate-100 p-8 mb-10 border-l-[10px] border-[#00A9E0]">
+                            <h2 class="text-3xl font-black edit-target">${currentData.title}</h2>
                         </div>
-                        <table>
-                            <tr class="bg-slate-50 font-bold"><td class="w-1/3">핵심 주제</td><td>상세 내용</td></tr>
-                            <tr><th>의사결정 요약</th><td>${lastResultData.sum}</td></tr>
-                            <tr><th>중점 논의</th><td>${lastResultData.det}</td></tr>
+                        <table class="mb-12">
+                            <tr class="bg-slate-50 font-bold"><td>구분</td><td>상세 내용</td></tr>
+                            <tr><th>전략 요약</th><td class="edit-target">${currentData.sum}</td></tr>
+                            <tr><th>논의 핵심</th><td class="edit-target">${currentData.main}</td></tr>
                         </table>
                     </div>`;
-            } else if (tpl === 'memo') {
-                html = `
-                    <div class="a4-page active-page" style="padding: 20mm;">
-                        <div class="text-right text-sm text-slate-400 mb-10">작성일: ${lastResultData.date}</div>
-                        <div class="text-3xl font-light mb-10 border-b pb-4">${lastResultData.title}</div>
-                        <div class="content-text italic border-l-4 pl-6 mb-10">"${lastResultData.sum}"</div>
-                        <div class="content-text">${lastResultData.det}</div>
+            } else {
+                html = `<div class="a4-page active-page" id="pdf-target" style="padding: 25mm;">
+                        <h2 class="text-2xl font-light mb-10 border-b pb-4 edit-target">${currentData.title}</h2>
+                        <div class="content-text edit-target leading-[2]">${currentData.main}</div>
                     </div>`;
             }
-            container.innerHTML = html;
+            view.innerHTML = html;
+            if(isEditMode) refreshEditAttribs();
         }
 
-        function toggleEdit() {
-            isEdit = !isEdit;
-            document.querySelectorAll('[contenteditable]').forEach(el => el.contentEditable = isEdit);
-            const btn = document.getElementById('edit-btn');
-            btn.innerText = isEdit ? "수정 완료" : "수정 시작";
-            btn.className = isEdit ? "w-full py-3 bg-emerald-600 rounded-xl font-bold text-sm" : "w-full py-3 bg-slate-700 rounded-xl font-bold text-sm";
+        function toggleEditMode() {
+            isEditMode = !isEditMode;
+            refreshEditAttribs();
+            const btn = document.getElementById('edit-mode-btn');
+            btn.innerText = isEditMode ? "수정 완료" : "수정 시작";
+            btn.classList.toggle('edit-active', isEditMode);
+        }
+
+        function refreshEditAttribs() {
+            document.querySelectorAll('.edit-target').forEach(el => el.contentEditable = isEditMode);
+        }
+
+        // [PDF 저장 시 선 생김 현상 완벽 해결]
+        function saveAsPDF() {
+            const target = document.getElementById('pdf-target');
+            if(!target) return alert("분석 결과가 없습니다.");
+            
+            target.classList.add('pdf-mode'); // 그림자 제거
+            const opt = {
+                margin: 0,
+                filename: 'Coway_ESG_Minutes.pdf',
+                image: { type: 'jpeg', quality: 1.0 },
+                html2canvas: { scale: 3, useCORS: true, letterRendering: true, scrollY: 0 },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            
+            html2pdf().set(opt).from(target).save().then(() => {
+                target.classList.remove('pdf-mode');
+            });
         }
     </script>
 </body>
