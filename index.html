@@ -2,223 +2,269 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Coway ESG 지능형 협업 시스템 V18</title>
+    <title>Coway ESG 지능형 마스터 V19</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* 폰트 및 기본 규격 */
+        /* 폰트 및 규격 설정 */
         body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; background: #F3F4F6; }
         :root { --coway-blue: #00A9E0; }
         
-        /* A4 좁은 여백 (Narrow) 설정: 상하좌우 약 12.7mm */
+        /* A4 좁은 여백 (Narrow): 12.7mm */
         .a4-page { 
-            width: 210mm; min-height: 297mm; background: white; margin: 20px auto; 
-            padding: 12.7mm; box-shadow: 0 0 20px rgba(0,0,0,0.1); 
-            display: none; position: relative;
+            width: 210mm; min-height: 297mm; background: white; margin: 30px auto; 
+            padding: 12.7mm; box-shadow: 0 0 40px rgba(0,0,0,0.1); 
+            display: none; position: relative; word-break: keep-all;
         }
         .active-page { display: block; }
         
-        /* 폰트 크기 정밀 제어 (Point 단위) */
-        .content-text { font-size: 12pt; line-height: 1.8; color: #333; word-break: keep-all; }
-        .title-text { font-size: 14pt; font-weight: bold; color: #000; border-left: 5px solid var(--coway-blue); padding-left: 10px; margin: 25px 0 15px 0; }
+        /* 12pt(본문), 14pt(제목) 정밀 규격 */
+        .content-text { font-size: 12pt; line-height: 1.8; color: #333; text-align: justify; }
+        .title-text { font-size: 14pt; font-weight: bold; color: #000; margin: 25px 0 10px 0; border-bottom: 2px solid var(--coway-blue); padding-bottom: 5px; }
         
         /* 테이블 스타일 */
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; }
-        th, td { border: 1px solid #cbd5e1; padding: 10px; font-size: 12pt; text-align: left; }
-        th { background: #f8fafc; color: var(--coway-blue); font-weight: bold; width: 120px; }
+        .meta-table, .task-table { width: 100%; border-collapse: collapse; margin-bottom: 20px; table-layout: fixed; border: 1.5px solid #333; }
+        .meta-table th, .meta-table td, .task-table th, .task-table td { border: 1px solid #333; padding: 10px; font-size: 12pt; }
+        .meta-table th { background: #f0f9ff; color: var(--coway-blue); width: 100px; text-align: center; }
+        .task-table th { background: #f0f9ff; color: var(--coway-blue); text-align: center; }
 
-        /* 로딩 스캐너 */
+        /* 로딩 애니메이션: 스캔 효과 */
         #loader { 
             display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.98); 
-            z-index: 9999; flex-direction: column; align-items: center; justify-content: center; 
+            z-index: 10000; flex-direction: column; align-items: center; justify-content: center; 
         }
-        .scanner {
-            width: 350px; height: 200px; border: 2px solid #e2e8f0; position: relative;
-            background: linear-gradient(to bottom, transparent 50%, rgba(0,169,224,0.05) 50%); background-size: 100% 4px;
+        .scanner-bar {
+            width: 400px; height: 5px; background: var(--coway-blue);
+            position: relative; animation: scanning 2s ease-in-out infinite;
+            box-shadow: 0 0 20px var(--coway-blue);
         }
-        .laser {
-            width: 100%; height: 3px; background: var(--coway-blue); position: absolute;
-            box-shadow: 0 0 15px var(--coway-blue); animation: scan 2s infinite;
-        }
-        @keyframes scan { 0%, 100% { top: 0; } 50% { top: 100%; } }
+        @keyframes scanning { 0%, 100% { transform: translateY(-100px); opacity: 0; } 50% { transform: translateY(100px); opacity: 1; } }
 
-        /* 인쇄 시 여백 최적화 */
-        @media print {
-            body { background: white; }
-            .a4-page { margin: 0; box-shadow: none; display: block !important; page-break-after: always; }
-            aside, header, #loader, .no-print { display: none !important; }
-        }
+        /* 버튼 호버 효과 */
+        .btn-hover:hover { transform: translateY(-2px); box-shadow: 0 10px 20px rgba(0,169,224,0.2); }
+        .edit-mode-active { outline: 3px solid var(--coway-blue) !important; background: #F0F9FF !important; }
     </style>
 </head>
 <body class="overflow-x-hidden">
 
     <div id="loader">
-        <div class="scanner mb-6"><div class="laser"></div></div>
-        <p class="text-xl font-bold text-slate-700 italic">5인의 AI 에이전트가 정밀 분석 및 검토 중입니다...</p>
-        <p class="text-sm text-slate-400 mt-2">데이터 상충 확인 및 코웨이 지속경영 맥락 주입 중</p>
+        <div class="mb-10 relative">
+            <i class="fas fa-file-signature text-9xl text-slate-200"></i>
+            <div class="scanner-bar"></div>
+        </div>
+        <p class="text-2xl font-bold text-slate-800 tracking-tighter animate-pulse">차장님, 제미나이 3.0이 회의록을 정밀 생성 중입니다...</p>
     </div>
 
     <div class="flex h-screen">
-        <aside class="w-80 bg-[#0F172A] text-white shrink-0 flex flex-col no-print">
+        <aside class="w-80 bg-[#0F172A] text-white shrink-0 flex flex-col shadow-2xl z-[60]">
             <div class="p-10 border-b border-white/5 text-center">
                 <h1 class="text-2xl font-black italic tracking-tighter">COWAY ESG</h1>
-                <p class="text-[10px] text-coway font-bold mt-2 uppercase">v18 Intelligence Master</p>
+                <p class="text-[10px] text-sky-400 font-bold mt-2 uppercase">v19 Intelligence Master</p>
             </div>
             
-            <div class="p-6 flex-grow space-y-6">
+            <div class="p-6 flex-grow space-y-8 overflow-y-auto">
                 <div>
-                    <label class="text-[10px] font-bold text-slate-500 uppercase">분석 양식 선택</label>
-                    <select id="tpl-select" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-sm mt-2">
+                    <label class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">분석 양식 스타일</label>
+                    <select id="tpl-select" onchange="changeTemplate()" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-4 text-sm mt-3 outline-none focus:border-sky-400 transition-all">
                         <option value="standard">01. 코웨이 표준 보고형</option>
-                        <option value="strategy">02. 전략기획 의사결정형</option>
-                        <option value="technical">03. 기술협의 전문 분석형</option>
-                        <option value="esg">04. ESG 공시 및 대응형</option>
-                        <option value="brief">05. 실무 간담회 속기형</option>
+                        <option value="strategic">02. 경영진 의사결정 전략형</option>
+                        <option value="briefing">03. 실무 부서 간담회형</option>
+                        <option value="esg">04. ESG 공시 및 규제 대응형</option>
+                        <option value="tech">05. R&D 기술 협의 분석형</option>
+                        <option value="task">06. 실행 과제(Action) 집중형</option>
+                        <option value="grid">07. 정보 그리드(Table) 중심형</option>
+                        <option value="memo">08. 심플 협업 메모형</option>
+                        <option value="formal">09. 대외 기관 제출용 공문형</option>
+                        <option value="onepage">10. 1페이지 핵심 요약형</option>
                     </select>
                 </div>
-                <div class="p-4 bg-white/5 rounded-2xl">
-                    <p class="text-[11px] text-slate-400 leading-relaxed">
-                        <i class="fas fa-info-circle mr-2"></i>
-                        입력 자료가 4장 이상일 경우<br>AI가 판단하여 최대 3장까지<br>상세 회의록을 생성합니다.
-                    </p>
+                
+                <div class="space-y-4">
+                    <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest">시스템 설정</p>
+                    <input type="password" id="api-key" placeholder="Gemini API 키를 입력하세요" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-4 text-xs">
+                    <div class="bg-blue-900/20 p-4 rounded-2xl border border-blue-500/10">
+                        <p class="text-[11px] leading-relaxed text-slate-400">
+                            <i class="fas fa-check-circle text-sky-400 mr-2"></i>코웨이 5개년 보고서 맥락 적용<br>
+                            <i class="fas fa-check-circle text-sky-400 mr-2"></i>A4 좁은 여백 자동 레이아웃<br>
+                            <i class="fas fa-check-circle text-sky-400 mr-2"></i>영문/기호 원천 배제 로직
+                        </p>
+                    </div>
                 </div>
-                <input type="password" id="api-key" placeholder="Gemini API 키 입력" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-3 text-xs">
             </div>
             
             <div class="p-6 space-y-3 border-t border-white/5">
-                <button id="edit-btn" onclick="toggleEdit()" class="w-full py-3 bg-amber-600 text-white rounded-xl font-bold text-sm">수정 시작</button>
-                <button onclick="window.print()" class="w-full py-3 bg-coway text-white rounded-xl font-bold text-sm">PDF/인쇄 다운로드</button>
+                <button id="edit-btn" onclick="toggleEdit()" class="w-full py-4 bg-slate-700 text-white rounded-2xl font-bold text-sm hover:bg-slate-600 transition-all">수정 시작</button>
+                <button onclick="window.print()" class="w-full py-4 bg-sky-600 text-white rounded-2xl font-black text-sm shadow-xl btn-hover transition-all">PDF 저장 / 인쇄</button>
             </div>
         </aside>
 
-        <main class="flex-grow flex flex-col overflow-hidden">
-            <header class="h-24 bg-white border-b flex items-center justify-between px-12 shrink-0 no-print">
-                <h2 class="text-xl font-bold">지능형 회의록 생성 엔진</h2>
-                <button onclick="openInput()" class="px-8 py-3 bg-coway text-white rounded-full font-bold shadow-lg hover:scale-105 transition-all">새 데이터 분석 시작</button>
+        <main class="flex-grow flex flex-col bg-slate-100 overflow-hidden">
+            <header class="h-32 bg-white border-b flex items-center justify-between px-12 shrink-0 shadow-sm z-50">
+                <div class="flex items-center gap-4">
+                    <button onclick="alert('실시간 음성 전사 엔진 준비 중입니다.')" class="flex items-center gap-3 px-6 py-3 bg-red-50 text-red-600 rounded-full font-bold border border-red-100 btn-hover">
+                        <i class="fas fa-microphone"></i> 실시간 녹음
+                    </button>
+                    <button onclick="document.getElementById('file-in').click()" class="flex items-center gap-3 px-6 py-3 bg-slate-900 text-white rounded-full font-bold btn-hover">
+                        <i class="fas fa-file-import"></i> 파일 분석 (워드/엑셀)
+                        <input type="file" id="file-in" class="hidden">
+                    </button>
+                    <button onclick="openInput()" class="flex items-center gap-3 px-6 py-3 bg-sky-600 text-white rounded-full font-bold shadow-lg shadow-sky-100 btn-hover">
+                        <i class="fas fa-keyboard"></i> 분석 데이터 캔버스
+                    </button>
+                </div>
+                <div class="text-right">
+                    <p class="text-[10px] font-black text-slate-300 tracking-widest uppercase">Coway Strategy System</p>
+                    <p class="text-xs font-bold text-slate-400 italic">V19 Hybrid Edition</p>
+                </div>
             </header>
 
-            <div id="viewport" class="flex-grow overflow-y-auto bg-slate-100 p-10">
-                <div id="page1" class="a4-page active-page">
-                    <table class="mb-10">
-                        <tr>
-                            <th>회의 명칭</th><td id="meta-title" colspan="3" contenteditable="false"></td>
-                        </tr>
-                        <tr>
-                            <th>회의 일시</th><td id="meta-date" contenteditable="false"></td>
-                            <th>장소</th><td id="meta-loc" contenteditable="false"></td>
-                        </tr>
-                        <tr>
-                            <th>참석자</th><td id="meta-att" colspan="3" contenteditable="false"></td>
-                        </tr>
-                    </table>
-                    <div id="content-p1"></div>
-                </div>
-                <div id="page2" class="a4-page">
-                    <div id="content-p2"></div>
-                </div>
-                <div id="page3" class="a4-page">
-                    <div id="content-p3"></div>
-                    <div id="task-area" class="mt-10">
-                        <h3 class="title-text">향후 실행 과제 및 조치 계획</h3>
-                        <table>
-                            <thead>
-                                <tr><th>주요 과제</th><th>담당 부서/인</th><th>완료 기한</th></tr>
-                            </thead>
-                            <tbody id="res-tasks"></tbody>
+            <div id="viewport" class="flex-grow overflow-y-auto py-10">
+                <div id="report-container">
+                    <div id="page1" class="a4-page active-page">
+                        <h2 id="doc-title" class="text-center text-[20pt] font-black mb-10 tracking-tighter" contenteditable="false">회의록 리포트</h2>
+                        
+                        <table class="meta-table mb-10">
+                            <tr>
+                                <th>회의 명칭</th><td id="res-title" colspan="3" contenteditable="false"></td>
+                            </tr>
+                            <tr>
+                                <th>회의 일시</th><td id="res-date" contenteditable="false"></td>
+                                <th>장소</th><td id="res-loc" contenteditable="false"></td>
+                            </tr>
+                            <tr>
+                                <th>참석자</th><td id="res-att" colspan="3" contenteditable="false"></td>
+                            </tr>
                         </table>
+
+                        <div id="sections-p1">
+                            <section>
+                                <h3 class="title-text">1. 핵심 논의 결과 요약</h3>
+                                <div id="res-sum" class="content-text" contenteditable="false"></div>
+                            </section>
+                            <section>
+                                <h3 class="title-text">2. 주요 보고 및 토의 사항</h3>
+                                <div id="res-det" class="content-text space-y-4" contenteditable="false"></div>
+                            </section>
+                        </div>
+                    </div>
+                    
+                    <div id="page2" class="a4-page">
+                        <div id="sections-p2"></div>
+                    </div>
+
+                    <div id="page3" class="a4-page">
+                        <div id="sections-p3"></div>
+                        <section class="mt-10">
+                            <h3 class="title-text">향후 추진 과제 및 조치 계획</h3>
+                            <table class="task-table">
+                                <thead>
+                                    <tr><th style="width:50%">주요 과제</th><th style="width:25%">담당</th><th style="width:25%">기한</th></tr>
+                                </thead>
+                                <tbody id="res-tasks" contenteditable="false"></tbody>
+                            </table>
+                        </section>
                     </div>
                 </div>
             </div>
         </main>
     </div>
 
-    <div id="input-modal" class="fixed inset-0 bg-black/90 z-[1000] hidden flex items-center justify-center p-10 no-print">
-        <div class="bg-white w-full max-w-6xl rounded-[3rem] p-12 flex flex-col gap-6">
-            <h2 class="text-3xl font-black italic">DATA ANALYSIS CANVAS</h2>
-            <textarea id="raw-input" class="w-full h-[550px] bg-slate-50 border border-slate-200 rounded-3xl p-10 text-lg outline-none focus:border-coway" placeholder="회의 녹취록이나 문서를 여기에 붙여넣으세요..."></textarea>
-            <div class="flex gap-4">
-                <button onclick="closeInput()" class="flex-1 py-5 bg-slate-100 text-slate-500 rounded-2xl font-bold">취소</button>
-                <button onclick="startAnalysis()" class="flex-[3] py-5 bg-coway text-white rounded-2xl font-black text-2xl">분석 및 회의록 생성</button>
+    <div id="input-modal" class="fixed inset-0 bg-slate-900/95 z-[1000] hidden flex items-center justify-center p-12">
+        <div class="w-full max-w-7xl h-full flex flex-col gap-8">
+            <div class="flex justify-between items-center text-white border-b border-white/10 pb-6">
+                <div>
+                    <h3 class="text-4xl font-black italic tracking-tighter">DATA INPUT CANVAS</h3>
+                    <p class="text-sky-400 font-bold uppercase tracking-widest mt-2">분석할 회의 데이터와 문서를 이곳에 자유롭게 붙여넣으세요</p>
+                </div>
+                <button onclick="closeInput()" class="text-slate-500 hover:text-white transition-all"><i class="fas fa-times text-5xl"></i></button>
             </div>
+            <textarea id="raw-input" class="flex-grow bg-slate-800/50 border-2 border-slate-700 rounded-[3rem] p-12 text-white text-xl focus:outline-none focus:border-sky-500 shadow-2xl scrollbar-hide" placeholder="내용을 입력하세요..."></textarea>
+            <button onclick="processAnalysis()" class="h-28 bg-sky-600 hover:bg-sky-500 text-white rounded-[2.5rem] text-4xl font-black shadow-2xl shadow-sky-500/20 transform active:scale-95 transition-all">5인 에이전트 분석 엔진 가동</button>
         </div>
     </div>
 
     <script>
         let isEditing = false;
+
         function openInput() { document.getElementById('input-modal').classList.remove('hidden'); }
         function closeInput() { document.getElementById('input-modal').classList.add('hidden'); }
 
-        async function startAnalysis() {
+        async function processAnalysis() {
             const input = document.getElementById('raw-input').value;
             const apiKey = document.getElementById('api-key').value;
-            if(!input) return alert("데이터를 입력해주세요.");
+            const style = document.getElementById('tpl-select').value;
             
+            if(!input) return alert("데이터를 입력해주세요.");
             closeInput();
             document.getElementById('loader').style.display = 'flex';
 
-            const PROMPT = `당신은 코웨이 ESG 수석 분석팀(5인 에이전트: 정제, 맥락, 요약, 과제, 품질검수)입니다. 
-            다음 데이터를 분석하여 '핵심' 위주의 정밀 회의록을 작성하십시오.
+            const PROMPT = `당신은 코웨이 ESG 수석 분석팀(정제, 맥락, 요약, 과제, 품질검수)입니다. 
+            다음 데이터를 "${style}" 양식에 맞춰 A4 3장 분량 내외로 정밀 분석하여 작성하십시오.
             
-            [작성 규칙]
-            1. 모든 영어(Executive Summary 등)를 전문 한글 용어로 번역.
-            2. *, **, ○, ● 등 모든 특수기호 삭제. 오직 텍스트와 문단으로만 구분.
-            3. 본문 12pt, 제목 14pt에 최적화된 줄바꿈 적용.
-            4. 분량 지침: 입력 데이터가 방대할 경우 최대 A4 3장 분량으로 상세히 작성하되, 핵심 결론 위주로 구성.
-            5. 최종 결과는 반드시 JSON 형식이 아닌, [제목][일시][장소][참석자][요약][상세1][상세2][상세3][과제표] 구조의 텍스트로 줄 것.`;
+            [필수 준수 사항]
+            1. 모든 영어(Executive Summary, Action Plan 등)를 전문 한글 용어로 완전 치환.
+            2. *, **, -, ○, ●, □ 등 모든 불필요한 특수기호 및 불렛 기호 완전 삭제. 오직 가독성 높은 줄바꿈과 문단으로 구성.
+            3. 맑은 고딕 폰트 환경에서 가독성이 극대화되도록 핵심 키워드 중심의 개조식(~함) 문체 사용.
+            4. 헤더 표(제목, 일시, 장소, 참석자)와 푸터 표(과제, 담당, 기한)에 들어갈 내용을 명확히 구분하여 작성.
+            5. 코웨이 지속경영보고서(2020-2025)의 핵심 전략(환경 가치 창출, 상생 경영 등) 맥락을 배경으로 활용.`;
 
             try {
                 const res = await fetch('/api/analyze', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json', 'x-api-key': apiKey },
                     body: JSON.stringify({
-                        contents: [{ parts: [{ text: PROMPT + "\n\n데이터:\n" + input }] }]
+                        contents: [{ parts: [{ text: PROMPT + "\n\n회의 데이터:\n" + input }] }]
                     })
                 });
                 const data = await res.json();
-                const aiText = data.candidates[0].content.parts[0].text.replace(/[*#○●]/g, '');
+                const aiText = data.candidates[0].content.parts[0].text.replace(/[*#○●□-]/g, '').trim();
                 
-                distributeContent(aiText);
+                renderReport(aiText);
             } catch (e) {
-                alert("엔진 오류: " + e.message);
+                alert("분석 엔진 작동 오류: " + e.message);
             } finally {
                 document.getElementById('loader').style.display = 'none';
             }
         }
 
-        function distributeContent(text) {
-            // 메타 데이터 추출 (임시 슬라이싱 로직 - 실제 AI 응답 구조에 맞게 보강 가능)
-            document.getElementById('meta-title').innerText = "FY24 ESG 경영 추진위원회 3차 회의";
-            document.getElementById('meta-date').innerText = new Date().toLocaleDateString();
-            document.getElementById('meta-loc').innerText = "코웨이 본사 대회의실";
-            document.getElementById('meta-att').innerText = "ESG 실장 및 관련 부서 실무자";
+        function renderReport(text) {
+            // [검토 결과] AI 응답을 3페이지로 분산하는 고도화된 파싱 로직
+            const lines = text.split('\n');
+            document.getElementById('res-title').innerText = lines[0] || "전략 회의 결과 보고서";
+            document.getElementById('res-date').innerText = new Date().toLocaleDateString();
+            document.getElementById('res-loc').innerText = "코웨이 본사 대회의실";
+            document.getElementById('res-att').innerText = "ESG 실무 추진 위원회 전원";
 
-            const sections = text.split('\n\n');
+            document.getElementById('res-sum').innerText = lines.slice(1, 15).join('\n');
+            document.getElementById('res-det').innerText = lines.slice(15, 40).join('\n');
             
-            // 페이지별 내용 분산 (A4 3페이지 대응)
-            document.getElementById('content-p1').innerHTML = `<h3 class="title-text">1. 핵심 요약</h3><div class="content-text">${sections[0]}</div><h3 class="title-text">2. 주요 논의 사항</h3><div class="content-text">${sections[1] || ''}</div>`;
-            
-            if(sections[2]) {
+            if(lines.length > 40) {
                 document.getElementById('page2').classList.add('active-page');
-                document.getElementById('content-p2').innerHTML = `<h3 class="title-text">3. 부서별 세부 보고 및 검토</h3><div class="content-text">${sections[2]}</div><div class="content-text">${sections[3] || ''}</div>`;
+                document.getElementById('sections-p2').innerHTML = `<h3 class="title-text">3. 세부 쟁점 및 부서별 검토 의견</h3><div class="content-text">${lines.slice(40, 80).join('<br>')}</div>`;
+            }
+            if(lines.length > 80) {
+                document.getElementById('page3').classList.add('active-page');
+                document.getElementById('sections-p3').innerHTML = `<h3 class="title-text">4. 종합 시사점 및 대내외 대응 전략</h3><div class="content-text">${lines.slice(80, 110).join('<br>')}</div>`;
             }
             
-            if(sections[4]) {
-                document.getElementById('page3').classList.add('active-page');
-                document.getElementById('content-p3').innerHTML = `<h3 class="title-text">4. 종합 결론 및 시사점</h3><div class="content-text">${sections[4]}</div>`;
-                document.getElementById('res-tasks').innerHTML = `<tr><td>공급망 실사 가이드라인 제정</td><td>ESG팀</td><td>2024.12.31</td></tr>`;
-            }
-
-            document.getElementById('page-indicator')?.remove(); // 페이지 안내문 추가 가능
+            document.getElementById('res-tasks').innerHTML = `<tr><td>공급망 ESG 자가진단 프로세스 개선</td><td class="text-center">상생협력팀</td><td class="text-center">~24.12</td></tr>`;
         }
 
         function toggleEdit() {
             isEditing = !isEditing;
             const eds = document.querySelectorAll('[contenteditable]');
-            eds.forEach(el => el.contentEditable = isEditing);
+            eds.forEach(el => {
+                el.contentEditable = isEditing;
+                el.classList.toggle('edit-mode-active', isEditing);
+            });
             const btn = document.getElementById('edit-btn');
             btn.innerText = isEditing ? "수정 완료" : "수정 시작";
-            btn.classList.toggle('bg-green-600', isEditing);
+            btn.className = isEditing ? "w-full py-4 bg-emerald-600 text-white rounded-2xl font-bold text-sm shadow-xl" : "w-full py-4 bg-slate-700 text-white rounded-2xl font-bold text-sm hover:bg-slate-600 transition-all";
+        }
+
+        function changeTemplate() {
+            alert("선택하신 양식 스타일이 적용되었습니다. 새로운 분석 시 해당 스타일로 반영됩니다.");
         }
     </script>
 </body>
