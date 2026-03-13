@@ -2,194 +2,175 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Coway ESG 지능형 마스터 V32</title>
+    <title>Coway ESG 시스템 V33</title>
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: 'Malgun Gothic', sans-serif; background: #f0f2f5; margin: 0; overflow: hidden; }
-        :root { --coway-blue: #00A9E0; }
-        .a4-container { height: calc(100vh - 180px); overflow-y: auto; padding: 40px 0; }
-        .a4-page { width: 210mm; min-height: 297mm; background: white; margin: 0 auto; padding: 15mm; box-shadow: 0 0 20px rgba(0,0,0,0.1); display: none; }
+        body { font-family: 'Malgun Gothic', sans-serif; background: #f4f7f9; margin: 0; overflow: hidden; }
+        .a4-container { height: calc(100vh - 180px); overflow-y: auto; padding: 20px 0; }
+        .a4-page { width: 210mm; min-height: 297mm; background: white; margin: 0 auto; padding: 15mm; box-shadow: 0 0 15px rgba(0,0,0,0.1); display: none; }
         .active-page { display: block; }
-        .content-text { font-size: 12pt; line-height: 1.6; color: #1a1a1a; white-space: pre-wrap; word-break: keep-all; }
-        .title-text { font-size: 14pt; font-weight: bold; border-left: 6px solid var(--coway-blue); padding-left: 10px; margin: 25px 0 10px 0; }
         table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1.5px solid #000; }
         th, td { border: 1px solid #000; padding: 10px; font-size: 12pt; }
-        th { background: #f8fafc; color: var(--coway-blue); font-weight: bold; text-align: center; }
-        #loader { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.95); z-index: 10000; flex-direction: column; align-items: center; justify-content: center; }
-        .edit-active { outline: 3px solid var(--coway-blue) !important; background: #fffdeb !important; }
+        th { background: #f8fafc; color: #00A9E0; font-weight: bold; text-align: center; }
+        #loader { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
+        .edit-active { outline: 2px solid #00A9E0 !important; background: #fffdeb !important; }
     </style>
 </head>
 <body class="flex flex-col h-screen">
 
     <div id="loader">
-        <div class="w-16 h-16 border-4 border-blue-500 border-t-transparent rounded-full animate-spin mb-6"></div>
-        <p class="text-2xl font-bold text-slate-800">제미나이가 워드 내용을 정밀 분석 중입니다...</p>
+        <div class="w-12 h-12 border-4 border-sky-500 border-t-transparent rounded-full animate-spin mb-4"></div>
+        <p class="text-xl font-bold" id="loader-text">데이터 분석 중...</p>
     </div>
 
-    <header class="h-44 bg-white border-b flex flex-col items-center justify-center shrink-0 z-50 shadow-sm px-10">
-        <h1 class="text-3xl font-black text-slate-900 mb-8 tracking-tighter">Coway ESG 회의록 생성 마스터 V32</h1>
-        <div class="flex items-center gap-4">
-            <button id="rec-btn" onclick="toggleRec()" class="px-6 py-3 bg-red-50 text-red-600 rounded-full font-bold border border-red-100">
-                <i class="fas fa-microphone mr-2"></i>실시간 녹음 시작
+    <header class="h-44 bg-white border-b flex flex-col items-center justify-center shrink-0 shadow-sm px-6">
+        <h1 class="text-2xl font-black mb-6">Coway ESG 회의록 시스템 V33</h1>
+        <div class="flex gap-3">
+            <button id="live-rec" onclick="startLiveRec()" class="px-5 py-2 bg-red-50 text-red-600 rounded-full font-bold border border-red-200">
+                <i class="fas fa-microphone mr-2"></i>실시간 녹음
             </button>
-            <button onclick="document.getElementById('audio-in').click()" class="px-6 py-3 bg-orange-50 text-orange-600 rounded-full font-bold border border-orange-100">
-                <i class="fas fa-file-audio mr-2"></i>음성 파일 선택
+            <button onclick="document.getElementById('audio-file').click()" class="px-5 py-2 bg-orange-50 text-orange-600 rounded-full font-bold border border-orange-200">
+                <i class="fas fa-file-audio mr-2"></i>음성 파일 업로드
             </button>
-            <input type="file" id="audio-in" class="hidden" accept="audio/*">
-            <button onclick="document.getElementById('file-in').click()" class="px-6 py-3 bg-slate-900 text-white rounded-full font-bold shadow-lg">
-                <i class="fas fa-file-word mr-2"></i>워드/엑셀 문서 업로드
+            <button onclick="document.getElementById('word-file').click()" class="px-5 py-2 bg-slate-800 text-white rounded-full font-bold">
+                <i class="fas fa-file-word mr-2"></i>워드/엑셀 업로드
             </button>
-            <input type="file" id="file-in" class="hidden" accept=".docx,.xlsx">
-            <button onclick="openInput()" class="px-6 py-3 bg-sky-600 text-white rounded-full font-bold shadow-lg">
-                <i class="fas fa-keyboard mr-2"></i>글 붙여넣기/입력
+            <button onclick="openInput()" class="px-5 py-2 bg-sky-600 text-white rounded-full font-bold">
+                <i class="fas fa-keyboard mr-2"></i>글 붙여넣기
             </button>
+            <input type="file" id="audio-file" class="hidden" accept="audio/*" onchange="handleAudioUpload(this)">
+            <input type="file" id="word-file" class="hidden" accept=".docx,.xlsx" onchange="handleWordUpload(this)">
         </div>
     </header>
 
     <div class="flex flex-grow overflow-hidden">
-        <aside class="w-72 bg-slate-900 text-white p-8 space-y-10 shrink-0">
-            <div>
-                <label class="text-[10px] font-black text-slate-500 uppercase tracking-widest">양식 선택</label>
-                <select id="tpl-select" onchange="renderResult()" class="w-full bg-slate-800 border border-slate-700 rounded-xl p-4 text-sm mt-3 text-sky-400 font-bold outline-none">
-                    <option value="standard">01. 표준 보고서형</option>
-                    <option value="grid">02. 데이터 그리드형</option>
-                </select>
-            </div>
-            <div class="space-y-3">
-                <button id="edit-btn" onclick="toggleEdit()" class="w-full py-4 bg-slate-700 rounded-2xl font-bold text-sm">수정 시작</button>
-                <button onclick="window.print()" class="w-full py-4 bg-[#00A9E0] rounded-2xl font-black text-sm">PDF 저장</button>
-            </div>
+        <aside class="w-64 bg-slate-900 p-6 flex flex-col gap-4 no-print">
+            <button onclick="toggleEdit()" id="edit-btn" class="w-full py-3 bg-slate-700 text-white rounded-xl font-bold">수정 시작</button>
+            <button onclick="window.print()" class="w-full py-3 bg-sky-500 text-white rounded-xl font-bold">PDF 저장</button>
         </aside>
-
-        <main class="flex-grow bg-[#f0f3f6] a4-container">
-            <div id="output-area"></div>
+        <main class="flex-grow a4-container">
+            <div id="output"></div>
         </main>
     </div>
 
-    <div id="input-modal" class="fixed inset-0 bg-slate-900/95 z-[1000] hidden flex items-center justify-center p-12">
-        <div class="w-full max-w-6xl h-full flex flex-col gap-6">
-            <h3 class="text-white text-3xl font-black">DATA INPUT CANVAS</h3>
-            <textarea id="raw-text" class="flex-grow bg-slate-800 border-2 border-slate-700 rounded-[3rem] p-12 text-white text-xl outline-none" placeholder="여기에 회의 내용을 입력하거나 녹음된 텍스트를 확인하세요..."></textarea>
-            <div class="flex gap-4">
-                <button onclick="closeInput()" class="flex-1 py-4 bg-slate-700 text-white rounded-2xl">닫기</button>
-                <button onclick="processAI('text')" class="flex-[2] py-4 bg-sky-600 text-white rounded-2xl font-bold text-xl">분석 시작</button>
+    <div id="modal" class="fixed inset-0 bg-black/80 hidden flex items-center justify-center p-10 z-[2000]">
+        <div class="bg-white w-full max-w-4xl rounded-3xl p-8 flex flex-col gap-4">
+            <h2 class="text-2xl font-bold">데이터 입력 확인</h2>
+            <textarea id="raw-input" class="w-full h-96 p-4 border rounded-2xl outline-none focus:border-sky-500" placeholder="여기에 텍스트가 표시됩니다..."></textarea>
+            <div class="flex gap-3">
+                <button onclick="closeInput()" class="flex-1 py-4 bg-slate-200 rounded-xl font-bold">닫기</button>
+                <button onclick="processAI()" class="flex-2 py-4 bg-sky-600 text-white rounded-xl font-bold">분석 시작</button>
             </div>
         </div>
     </div>
 
     <script>
-        let isEdit = false; let lastData = null; let rec; let isRec = false;
+        let isEdit = false; let lastResult = null;
 
-        function openInput() { document.getElementById('input-modal').classList.remove('hidden'); }
-        function closeInput() { document.getElementById('input-modal').classList.add('hidden'); }
+        function openInput() { document.getElementById('modal').classList.remove('hidden'); }
+        function closeInput() { document.getElementById('modal').classList.add('hidden'); }
 
-        // [기능 1] 실시간 녹음
-        function toggleRec() {
-            const Speech = window.webkitSpeechRecognition || window.SpeechRecognition;
+        // 1. 실시간 녹음
+        function startLiveRec() {
+            const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
             if(!Speech) return alert("크롬을 사용하세요.");
-            if(!isRec) {
-                rec = new Speech(); rec.lang = 'ko-KR'; rec.continuous = true;
-                rec.onstart = () => { isRec = true; document.getElementById('rec-btn').innerText = "녹음 중지"; document.getElementById('rec-btn').className = "px-6 py-3 bg-red-600 text-white rounded-full font-bold"; };
-                rec.onresult = (e) => { document.getElementById('raw-text').value += e.results[e.results.length-1][0].transcript + " "; };
-                rec.start();
-            } else {
-                rec.stop(); isRec = false;
-                document.getElementById('rec-btn').innerText = "실시간 녹음 시작"; document.getElementById('rec-btn').className = "px-6 py-3 bg-red-50 text-red-600 rounded-full font-bold border border-red-100";
-                openInput();
-            }
+            const rec = new Speech(); rec.lang = 'ko-KR';
+            rec.onstart = () => { document.getElementById('live-rec').innerText = "듣고 있습니다..."; };
+            rec.onresult = (e) => { document.getElementById('raw-input').value += e.results[0][0].transcript + " "; openInput(); };
+            rec.onend = () => { document.getElementById('live-rec').innerText = "실시간 녹음"; };
+            rec.start();
         }
 
-        // [기능 2] 워드 업로드 (Mammoth 강화)
-        document.getElementById('file-in').onchange = async (e) => {
-            const file = e.target.files[0];
+        // 2. 음성 파일 업로드 (현재는 텍스트화 엔진이 없어 알림 후 입력창 유도)
+        function handleAudioUpload(input) {
+            alert("음성 파일 분석 기능은 현재 서버 환경에 따라 제한될 수 있습니다. 텍스트를 직접 입력하거나 워드를 권장합니다.");
+            openInput();
+        }
+
+        // 3. 워드 업로드
+        async function handleWordUpload(input) {
+            const file = input.files[0];
             if(!file) return;
-            document.getElementById('loader').style.display = 'flex';
+            showLoader("워드 파일 읽는 중...");
             try {
                 const arrayBuffer = await file.arrayBuffer();
                 const result = await mammoth.extractRawText({ arrayBuffer });
-                if(!result.value.trim()) throw new Error("파일에 읽을 수 있는 텍스트가 없습니다.");
-                processAI(result.value);
-            } catch (err) {
-                alert(err.message);
-                document.getElementById('loader').style.display = 'none';
-            }
-        };
+                document.getElementById('raw-input').value = result.value;
+                openInput();
+            } catch (e) { alert("워드 파일 읽기 실패: " + e.message); }
+            finally { hideLoader(); }
+        }
 
-        async function processAI(content) {
-            const input = content === 'text' ? document.getElementById('raw-text').value : content;
-            if(!input.trim()) return alert("입력된 내용이 없습니다.");
-            closeInput(); document.getElementById('loader').style.display = 'flex';
+        async function processAI() {
+            const text = document.getElementById('raw-input').value;
+            if(!text.trim()) return alert("내용을 입력해주세요.");
+            closeInput(); showLoader("제미나이 본체가 분석 중입니다...");
 
-            const PROMPT = `당신은 코웨이 비서실장입니다. [자료]를 채팅방 퀄리티로 분석하세요. 
-            반드시 아래 형식으로만 쓰세요:
-            [[제목]] 회의 제목
-            [[요약]] 핵심 요약
-            [[본문]] 세부 논의
-            [[일정]] 과제|담당|기한`;
+            const prompt = `당신은 코웨이 비서실장입니다. 다음 자료를 분석해 회의록을 작성하세요. 반드시 [[제목]], [[요약]], [[본문]], [[일정]] 꼬리표를 사용하세요.\n\n[자료]:\n${text}`;
 
             try {
                 const res = await fetch('/api/analyze', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ contents: [{ parts: [{ text: PROMPT + "\n\n[자료]:\n" + input }] }] })
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify({ contents: [{ parts: [{ text: prompt }] }] })
                 });
                 const data = await res.json();
-                const aiText = data.candidates[0].content.parts[0].text;
                 
-                // [V32 핵심] 꼬리표 없어도 안 뻗고 전체 내용을 본문에라도 넣는 무결점 파싱
-                lastData = {
-                    title: extractTag(aiText, "제목") || "회의 결과 보고서",
-                    summary: extractTag(aiText, "요약") || "요약 내용을 파싱하지 못했습니다.",
-                    details: extractTag(aiText, "본문") || aiText, // 꼬리표 없으면 전체를 본문에 넣음
-                    tasks: extractTag(aiText, "일정") || ""
-                };
-                renderResult();
+                if(data.error) {
+                    alert("에러 발생: " + data.error);
+                    return;
+                }
+
+                const aiText = data.candidates[0].content.parts[0].text;
+                lastResult = parseAIResponse(aiText);
+                render();
             } catch (e) {
-                alert("제미나이 연결 오류. 잠시 후 다시 시도해주세요.");
-            } finally {
-                document.getElementById('loader').style.display = 'none';
-            }
+                alert("네트워크 오류가 발생했습니다. Vercel 로그를 확인하세요.");
+            } finally { hideLoader(); }
         }
 
-        function extractTag(text, tag) {
-            const regex = new RegExp(`\\[\\[${tag}\\]\\](.*?)(?=\\[\\[|$)`, "s");
-            return text.match(regex)?.[1]?.trim();
+        function parseAIResponse(text) {
+            const getTag = (tag) => {
+                const reg = new RegExp(`\\[\\[${tag}\\]\\](.*?)(?=\\[\\[|$)`, "s");
+                return text.match(reg)?.[1]?.trim() || "";
+            };
+            const title = getTag("제목") || "회의 결과 보고";
+            const summary = getTag("요약") || "요약을 찾을 수 없습니다.";
+            const details = getTag("본문") || text; // 꼬리표 없으면 전체 텍스트 반환
+            const tasks = getTag("일정") || "";
+            return { title, summary, details, tasks };
         }
 
-        function renderResult() {
-            if(!lastData) return;
-            const tpl = document.getElementById('tpl-select').value;
-            const out = document.getElementById('output-area');
-            const rows = lastData.tasks.split('\n').filter(l => l.includes('|')).map(line => {
-                const [t, o, d] = line.split('|');
-                return `<tr><td class="edit-field">${t||''}</td><td class="edit-field text-center">${o||''}</td><td class="edit-field text-center">${d||''}</td></tr>`;
+        function render() {
+            const out = document.getElementById('output');
+            const taskRows = lastResult.tasks.split('\n').filter(l => l.includes('|')).map(line => {
+                const [a, b, c] = line.split('|');
+                return `<tr><td class="edit-field">${a||''}</td><td class="edit-field">${b||''}</td><td class="edit-field">${c||''}</td></tr>`;
             }).join('');
 
-            out.innerHTML = `<div class="a4-page active-page" id="pdf-area">
-                <h2 class="text-center text-[24pt] font-black mb-10 border-b-4 border-black pb-4">회 의 록</h2>
-                <table>
-                    <tr><th width="140">회의 명칭</th><td colspan="3" class="edit-field">${lastData.title}</td></tr>
-                    <tr><th>회의 일시</th><td class="edit-field">2024. 09. 04. 13:30</td><th width="100">소속</th><td class="edit-field">상생구매팀</td></tr>
-                </table>
-                <h3 class="title-text">1. 핵심 요약</h3><div class="content-text edit-field mb-10">${lastData.summary}</div>
-                <h3 class="title-text">2. 세부 논의 사항</h3><div class="content-text edit-field mb-10">${lastData.details}</div>
-                <h3 class="title-text">3. 향후 추진 일정</h3>
-                <table><tr><th>추진 과제</th><th>담당</th><th>기한</th></tr>${rows || '<tr><td colspan="3" class="text-center">기재된 일정 없음</td></tr>'}</table>
-            </div>`;
+            out.innerHTML = `
+                <div class="a4-page active-page">
+                    <h1 class="text-center text-3xl font-black mb-10 pb-4 border-b-2">회 의 록</h1>
+                    <table>
+                        <tr><th width="150">회의 명칭</th><td class="edit-field">${lastResult.title}</td></tr>
+                        <tr><th>회의 일시</th><td>2024. 09. 04. 13:30 (상생구매팀)</td></tr>
+                    </table>
+                    <div class="mt-8 mb-2 font-bold text-sky-600">1. 핵심 요약</div>
+                    <div class="edit-field whitespace-pre-wrap mb-8">${lastResult.summary}</div>
+                    <div class="mt-8 mb-2 font-bold text-sky-600">2. 상세 논의 내용</div>
+                    <div class="edit-field whitespace-pre-wrap mb-8">${lastResult.details}</div>
+                    <div class="mt-8 mb-2 font-bold text-sky-600">3. 향후 추진 일정</div>
+                    <table><tr><th>추진 과제</th><th>담당</th><th>기한</th></tr>${taskRows || '<tr><td colspan="3">내용 없음</td></tr>'}</table>
+                </div>`;
             if(isEdit) refreshEdit();
         }
 
-        function toggleEdit() {
-            isEdit = !isEdit; refreshEdit();
-            document.getElementById('edit-btn').innerText = isEdit ? "수정 완료" : "수정 시작";
-            document.getElementById('edit-btn').classList.toggle('bg-green-600', isEdit);
-        }
-        function refreshEdit() {
-            document.querySelectorAll('.edit-field').forEach(el => { el.contentEditable = isEdit; el.classList.toggle('edit-active', isEdit); });
-        }
+        function toggleEdit() { isEdit = !isEdit; refreshEdit(); document.getElementById('edit-btn').innerText = isEdit ? "수정 완료" : "수정 시작"; }
+        function refreshEdit() { document.querySelectorAll('.edit-field').forEach(el => el.contentEditable = isEdit); document.querySelectorAll('.edit-field').forEach(el => el.classList.toggle('edit-active', isEdit)); }
+        function showLoader(text) { document.getElementById('loader').style.display = 'flex'; document.getElementById('loader-text').innerText = text; }
+        function hideLoader() { document.getElementById('loader').style.display = 'none'; }
     </script>
 </body>
 </html>
