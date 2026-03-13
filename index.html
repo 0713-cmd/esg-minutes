@@ -2,19 +2,20 @@
 <html lang="ko">
 <head>
     <meta charset="UTF-8">
-    <title>Coway ESG 시스템 V36 (Masterpiece)</title>
+    <title>Coway ESG 시스템 V38 (Gemini 3 Flash)</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
         body { font-family: 'Malgun Gothic', '맑은 고딕', sans-serif; background: #f8fafc; margin: 0; overflow: hidden; }
         :root { --coway-blue: #00A9E0; }
-        .a4-container { height: calc(100vh - 180px); overflow-y: auto; padding: 40px 0; }
+        .a4-container { height: calc(100vh - 180px); overflow-y: auto; padding: 20px 0; }
         .a4-page { width: 210mm; min-height: 297mm; background: white; margin: 0 auto; padding: 15mm; box-shadow: 0 0 25px rgba(0,0,0,0.08); }
-        .title-text { font-size: 14pt; font-weight: bold; color: #000; border-left: 6px solid var(--coway-blue); padding-left: 10px; margin: 30px 0 10px 0; }
-        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1.5px solid #000; }
+        /* 차장님이 지적하신 표 스타일 수정: 배경색 제거 및 선명도 강화 */
+        table { width: 100%; border-collapse: collapse; margin-bottom: 20px; border: 1.5px solid #000; background: white; }
         th, td { border: 1px solid #000; padding: 10px; font-size: 11pt; }
-        th { background: #f1f5f9; color: var(--coway-blue); font-weight: bold; text-align: center; }
+        th { background: #f1f5f9 !important; color: var(--coway-blue); font-weight: bold; text-align: center; }
+        .title-text { font-size: 14pt; font-weight: bold; color: #000; border-left: 6px solid var(--coway-blue); padding-left: 10px; margin: 30px 0 10px 0; }
         #loader { display: none; position: fixed; inset: 0; background: rgba(255,255,255,0.9); z-index: 1000; flex-direction: column; align-items: center; justify-content: center; }
         .edit-active { outline: 3px solid var(--coway-blue) !important; background: #fffdeb !important; }
     </style>
@@ -23,37 +24,37 @@
 
     <div id="loader">
         <div class="w-14 h-14 border-4 border-sky-500 border-t-transparent rounded-full animate-spin mb-4"></div>
-        <p class="text-xl font-black text-slate-700" id="loader-text">데이터를 무결하게 분석 중입니다...</p>
+        <p class="text-xl font-black text-slate-700" id="loader-text">Gemini 3 Flash 엔진 가동 중...</p>
     </div>
 
     <header class="h-44 bg-white border-b flex flex-col items-center justify-center shrink-0 shadow-sm px-10">
-        <h1 class="text-2xl font-black text-slate-800 mb-6">Coway ESG 회의록 시스템 V36</h1>
+        <h1 class="text-2xl font-black text-slate-800 mb-6 tracking-tighter">Coway ESG 회의록 마스터 V38</h1>
         <div class="flex gap-4">
-            <button id="btn-live" onclick="startSpeech()" class="px-6 py-2.5 bg-red-50 text-red-600 rounded-full font-bold border border-red-200 hover:bg-red-100 transition-all">
-                <i class="fas fa-microphone mr-2"></i>실시간 녹음
+            <button id="live-rec-btn" onclick="startMic()" class="px-6 py-2.5 bg-red-50 text-red-600 rounded-full font-bold border border-red-200 hover:bg-red-100">
+                <i class="fas fa-microphone mr-2"></i>실시간 녹음 시작
             </button>
-            <button onclick="document.getElementById('in-audio').click()" class="px-6 py-2.5 bg-orange-50 text-orange-600 rounded-full font-bold border border-orange-200 hover:bg-orange-100">
+            <button onclick="document.getElementById('audio-upload').click()" class="px-6 py-2.5 bg-orange-50 text-orange-600 rounded-full font-bold border border-orange-200 hover:bg-orange-100">
                 <i class="fas fa-file-audio mr-2"></i>음성 파일 업로드
             </button>
-            <button onclick="document.getElementById('in-word').click()" class="px-6 py-2.5 bg-slate-800 text-white rounded-full font-bold hover:bg-slate-700">
+            <button onclick="document.getElementById('word-upload').click()" class="px-6 py-2.5 bg-slate-800 text-white rounded-full font-bold hover:bg-slate-700">
                 <i class="fas fa-file-word mr-2"></i>워드/엑셀 업로드
             </button>
-            <button onclick="openCanvas()" class="px-6 py-2.5 bg-sky-600 text-white rounded-full font-bold hover:bg-sky-500 shadow-lg">
+            <button onclick="openInput()" class="px-6 py-2.5 bg-sky-600 text-white rounded-full font-bold hover:bg-sky-500">
                 <i class="fas fa-keyboard mr-2"></i>글 붙여넣기
             </button>
-            <input type="file" id="in-audio" class="hidden" accept="audio/*" onchange="openCanvas()">
-            <input type="file" id="in-word" class="hidden" accept=".docx,.xlsx" onchange="handleWord(this)">
+            <input type="file" id="audio-upload" class="hidden" accept="audio/*" onchange="openInput()">
+            <input type="file" id="word-upload" class="hidden" accept=".docx,.xlsx" onchange="handleWord(this)">
         </div>
     </header>
 
     <div class="flex flex-grow overflow-hidden">
         <aside class="w-64 bg-slate-900 p-6 flex flex-col gap-4 no-print shadow-2xl">
             <button onclick="toggleEdit()" id="edit-btn" class="w-full py-4 bg-slate-700 text-white rounded-2xl font-bold">수정 시작</button>
-            <button onclick="window.print()" class="w-full py-4 bg-sky-500 text-white rounded-2xl font-black shadow-xl">PDF 저장</button>
+            <button onclick="window.print()" class="w-full py-4 bg-[#00A9E0] text-white rounded-2xl font-black">PDF 저장</button>
         </aside>
         <main class="flex-grow a4-container">
             <div id="output-area">
-                <div class="a4-page text-center pt-40 text-slate-300 font-bold">자료를 입력하면 제미나이가 회의록을 작성합니다.</div>
+                <div class="a4-page text-center pt-40 text-slate-300 font-bold">Gemini 3 Flash 엔진이 차장님의 데이터를 기다리고 있습니다.</div>
             </div>
         </main>
     </div>
@@ -61,10 +62,10 @@
     <div id="modal-canvas" class="fixed inset-0 bg-slate-900/90 hidden flex items-center justify-center p-10 z-[2000]">
         <div class="bg-white w-full max-w-5xl rounded-[2.5rem] p-10 flex flex-col gap-6 shadow-2xl">
             <h2 class="text-3xl font-black text-slate-800 italic">DATA INPUT CANVAS</h2>
-            <textarea id="text-input" class="w-full h-[50vh] p-6 border-2 border-slate-100 rounded-3xl outline-none focus:border-sky-500 text-lg" placeholder="여기에 분석할 내용을 입력하거나 확인하세요..."></textarea>
+            <textarea id="raw-input" class="w-full h-[50vh] p-6 border-2 border-slate-100 rounded-3xl outline-none focus:border-sky-500 text-lg" placeholder="내용을 확인 후 분석을 시작하세요..."></textarea>
             <div class="flex gap-4">
-                <button onclick="closeCanvas()" class="flex-1 py-5 bg-slate-100 text-slate-500 rounded-2xl font-bold">닫기</button>
-                <button onclick="runGemini()" class="flex-[3] py-5 bg-sky-600 text-white rounded-2xl font-black text-xl shadow-xl hover:bg-sky-500">제미나이 분석 시작</button>
+                <button onclick="closeInput()" class="flex-1 py-5 bg-slate-100 text-slate-500 rounded-2xl font-bold">닫기</button>
+                <button onclick="runAnalysis()" class="flex-[3] py-5 bg-sky-600 text-white rounded-2xl font-black text-xl shadow-xl hover:bg-sky-500">제미나이 3.0 분석 시작</button>
             </div>
         </div>
     </div>
@@ -72,20 +73,20 @@
     <script>
         let isEdit = false; let resultData = null;
 
-        function openCanvas() { document.getElementById('modal-canvas').classList.remove('hidden'); }
-        function closeCanvas() { document.getElementById('modal-canvas').classList.add('hidden'); }
+        function openInput() { document.getElementById('modal-canvas').classList.remove('hidden'); }
+        function closeInput() { document.getElementById('modal-canvas').classList.add('hidden'); }
 
         // 1. 실시간 녹음
-        function startSpeech() {
+        function startMic() {
             const Speech = window.SpeechRecognition || window.webkitSpeechRecognition;
-            if(!Speech) return alert("크롬 브라우저를 사용해주세요.");
-            const rec = new Speech(); rec.lang = 'ko-KR';
-            rec.onstart = () => { document.getElementById('btn-live').innerText = "회의 내용 경청 중..."; };
+            if(!Speech) return alert("크롬을 사용하세요.");
+            const rec = new Speech(); rec.lang = 'ko-KR'; rec.continuous = true;
+            rec.onstart = () => { document.getElementById('live-rec-btn').innerText = "회의 내용 듣는 중..."; };
             rec.onresult = (e) => { 
-                document.getElementById('text-input').value += e.results[0][0].transcript + " "; 
-                openCanvas();
+                document.getElementById('raw-input').value += e.results[e.results.length-1][0].transcript + " "; 
+                openInput();
             };
-            rec.onend = () => { document.getElementById('btn-live').innerText = "실시간 녹음"; };
+            rec.onend = () => { document.getElementById('live-rec-btn').innerText = "실시간 녹음 시작"; };
             rec.start();
         }
 
@@ -97,18 +98,19 @@
             try {
                 const buffer = await file.arrayBuffer();
                 const res = await mammoth.extractRawText({ arrayBuffer: buffer });
-                document.getElementById('text-input').value = res.value;
-                openCanvas();
-            } catch (e) { alert("워드 파일 해독 실패: " + e.message); }
+                document.getElementById('raw-input').value = res.value;
+                openInput();
+            } catch (e) { alert("워드 해독 실패: " + e.message); }
             finally { hideLoader(); }
         }
 
-        async function runGemini() {
-            const rawText = document.getElementById('text-input').value;
+        async function runAnalysis() {
+            const rawText = document.getElementById('raw-input').value;
             if(!rawText.trim()) return alert("입력된 내용이 없습니다.");
-            closeCanvas(); showLoader("제미나이 3.0 지능으로 분석 중...");
+            closeInput(); showLoader("Gemini 3 Flash가 정밀 분석 중입니다...");
 
-            const prompt = `당신은 코외이 비서실장입니다. 다음 자료를 바탕으로 채팅방에서 보여준 것과 똑같이 완벽한 회의록을 작성하세요.
+            // 차장님이 채팅창에서 성공한 그 퀄리티를 위한 프롬프트
+            const prompt = `당신은 코웨이 상생구매팀 비서실장입니다. 다음 자료를 바탕으로 정갈하고 완벽한 회의록을 작성하세요.
             반드시 [[제목]], [[요약]], [[본문]], [[일정]] 태그를 사용해 섹션을 나누어 주세요.
             [자료]:\n${rawText}`;
 
@@ -121,21 +123,20 @@
                 const data = await res.json();
                 if(data.error) { alert(data.error); return; }
 
-                const aiResponse = data.candidates[0].content.parts[0].text;
+                const aiText = data.candidates[0].content.parts[0].text;
                 
-                // [V36 생존 로직] 태그가 없어도 어떻게든 파싱합니다.
                 const findTag = (tag) => {
-                    const start = aiResponse.indexOf(`[[${tag}]]`);
+                    const start = aiText.indexOf(`[[${tag}]]`);
                     if(start === -1) return "";
-                    let end = aiResponse.indexOf("[[", start + 2);
-                    if(end === -1) end = aiResponse.length;
-                    return aiResponse.substring(start + tag.length + 4, end).trim();
+                    let end = aiText.indexOf("[[", start + 2);
+                    if(end === -1) end = aiText.length;
+                    return aiText.substring(start + tag.length + 4, end).trim();
                 };
 
                 resultData = {
                     title: findTag("제목") || "회의 결과 보고서",
-                    summary: findTag("요약") || "요약 내용을 생성하지 못했습니다.",
-                    details: findTag("본문") || aiResponse,
+                    summary: findTag("요약") || "분석 실패",
+                    details: findTag("본문") || aiText,
                     tasks: findTag("일정") || ""
                 };
                 renderUI();
@@ -158,13 +159,13 @@
                         <tr><th>회의 일시</th><td>2024. 09. 04. 13:30 (상생구매팀)</td></tr>
                     </table>
                     <div class="title-text">1. 핵심 요약</div>
-                    <div class="edit-field whitespace-pre-wrap mb-8 leading-relaxed text-justify">${resultData.summary}</div>
+                    <div class="edit-field whitespace-pre-wrap mb-8 text-justify leading-relaxed">${resultData.summary}</div>
                     <div class="title-text">2. 상세 논의 내용</div>
-                    <div class="edit-field whitespace-pre-wrap mb-8 leading-relaxed text-justify">${resultData.details}</div>
+                    <div class="edit-field whitespace-pre-wrap mb-8 text-justify leading-relaxed">${resultData.details}</div>
                     <div class="title-text">3. 향후 추진 일정</div>
                     <table>
                         <thead><tr><th>추진 과제</th><th>담당 부서</th><th>기한</th></tr></thead>
-                        <tbody>${taskLines || '<tr><td colspan="3" class="text-center">일정 데이터가 없습니다.</td></tr>'}</tbody>
+                        <tbody>${taskLines || '<tr><td colspan="3" class="text-center">데이터 없음</td></tr>'}</tbody>
                     </table>
                 </div>`;
             if(isEdit) refreshEdit();
