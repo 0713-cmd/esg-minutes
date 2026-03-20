@@ -1174,20 +1174,17 @@ async function generateMinutes() {
 }
 
 async function callClaudeAPI(prompt) {
-  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${state.claudeKey}`;
-
-  const response = await fetch(url, {
+  // Vercel 서버리스 함수(/api/analyze)를 통해 차장님의 API 키와 안전하게 연결합니다.
+  const response = await fetch('/api/analyze', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
-      contents: [{ parts: [{ text: prompt }] }],
-      generationConfig: { temperature: 0.3, maxOutputTokens: 4096 }
+      contents: [{ parts: [{ text: prompt }] }]
     })
   });
 
   if (!response.ok) {
-    const err = await response.json().catch(() => ({}));
-    throw new Error(err.error?.message || `API 오류 (${response.status})`);
+    throw new Error(`API 연결 실패 (Status: ${response.status})`);
   }
 
   const data = await response.json();
