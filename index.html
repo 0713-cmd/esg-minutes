@@ -6,7 +6,6 @@
 <title>회의록 자동생성 시스템</title>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
@@ -135,6 +134,32 @@ main { max-width: 1100px; margin: 0 auto; padding: 40px 32px; }
   .info-grid { grid-template-columns: 1fr 1fr; }
   .version-grid { grid-template-columns: 1fr; }
   .card { padding: 24px 20px; }
+}
+
+/* ── 인쇄 전용 스타일 (PDF 저장용) ── */
+#printArea { display: none; }
+@media print {
+  body > * { display: none !important; }
+  #printArea {
+    display: block !important;
+    font-family: 'Noto Sans KR', '맑은 고딕', sans-serif;
+    font-size: 11pt;
+    color: #1a1a2e;
+    line-height: 1.8;
+    padding: 0;
+    margin: 0;
+  }
+  #printArea .print-header { border-bottom: 3px solid #0f1f3d; padding-bottom: 12pt; margin-bottom: 18pt; }
+  #printArea .print-title { font-size: 18pt; font-weight: 700; color: #0f1f3d; margin-bottom: 6pt; }
+  #printArea .print-meta { font-size: 9pt; color: #555; }
+  #printArea h2 { font-size: 13pt; font-weight: 700; color: #0f1f3d; border-bottom: 1.5px solid #ccc; padding-bottom: 4pt; margin: 16pt 0 8pt; }
+  #printArea table { width: 100%; border-collapse: collapse; margin: 8pt 0 14pt; font-size: 9pt; }
+  #printArea th { background: #0f1f3d !important; color: white !important; padding: 6pt 8pt; text-align: left; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #printArea td { padding: 6pt 8pt; border: 1px solid #ddd; vertical-align: top; }
+  #printArea tr:nth-child(even) td { background: #f8f8f8 !important; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  #printArea ul { margin: 4pt 0 10pt 16pt; }
+  #printArea li { margin-bottom: 3pt; }
+  #printArea strong { color: #0f1f3d; }
 }
 </style>
 </head>
@@ -280,6 +305,9 @@ main { max-width: 1100px; margin: 0 auto; padding: 40px 32px; }
   </div>
 
 </main>
+
+<!-- 인쇄 전용 영역 (PDF 저장 시 사용) -->
+<div id="printArea"></div>
 
 <script>
 const state = {
@@ -519,36 +547,86 @@ function toggleEdit() {
   }
 }
 
-async function exportPDF() {
-  const { jsPDF } = window.jspdf;
+// ── PDF 저장 (브라우저 인쇄 기능 사용 → 한글 완벽 지원) ──
+function exportPDF() {
   const info = getMeetingInfo();
   const title = info.title || '회의록';
-  const content = document.getElementById('resultContent');
-  const wrap = document.createElement('div');
-  wrap.style.cssText = 'width:700px;padding:40px;font-family:sans-serif;background:white;color:#1a1a2e;font-size:13px;line-height:1.8;';
-  wrap.innerHTML = `<div style="border-bottom:3px solid #0f1f3d;padding-bottom:14px;margin-bottom:22px;"><h1 style="font-size:20px;color:#0f1f3d;margin-bottom:6px;">${title}</h1><div style="font-size:12px;color:#555;">${info.date ? `📅 ${info.date} ${info.time}` : ''}${info.attendees ? ` | 👥 ${info.attendees}` : ''}${info.dept ? ` | 📁 ${info.dept}` : ''}</div></div>${content.innerHTML}`;
-  wrap.querySelectorAll('table').forEach(t => { t.style.cssText = 'width:100%;border-collapse:collapse;margin:10px 0;font-size:11px;'; });
-  wrap.querySelectorAll('th').forEach(th => { th.style.cssText = 'background:#0f1f3d;color:white;padding:7px 10px;text-align:left;'; });
-  wrap.querySelectorAll('td').forEach(td => { td.style.cssText = 'padding:7px 10px;border-bottom:1px solid #eee;'; });
-  document.body.appendChild(wrap);
-  try {
-    const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-    await doc.html(wrap, { callback: d => d.save(`회의록_${title}_${info.date}.pdf`), x: 10, y: 10, width: 190, windowWidth: 700 });
-  } catch (e) {
-    alert('PDF 저장 오류. Word로 저장 후 PDF 변환을 권장합니다.');
-  }
-  document.body.removeChild(wrap);
+  const content = document.getElementById('resultContent').innerHTML;
+
+  const metaParts = [];
+  if (info.date) metaParts.push(`📅 ${info.date} ${info.time}`);
+  if (info.attendees) metaParts.push(`👥 ${info.attendees}`);
+  if (info.dept) metaParts.push(`📁 ${info.dept}`);
+
+  document.getElementById('printArea').innerHTML = `
+    <div class="print-header">
+      <div class="print-title">${title}</div>
+      <div class="print-meta">${metaParts.join(' &nbsp;|&nbsp; ')}</div>
+    </div>
+    ${content}
+  `;
+
+  // 원래 문서 제목 저장 후 회의록 제목으로 변경 (PDF 파일명이 됨)
+  const origTitle = document.title;
+  document.title = `회의록_${title}_${info.date}`;
+  window.print();
+  document.title = origTitle;
+
+  // 인쇄 후 printArea 초기화
+  setTimeout(() => { document.getElementById('printArea').innerHTML = ''; }, 1000);
 }
 
+// ── Word 저장 (BOM + UTF-8 인코딩 → 한글 깨짐 방지) ──
 function exportWord() {
   const info = getMeetingInfo();
   const title = info.title || '회의록';
   const content = document.getElementById('resultContent').innerHTML;
-  const html = `<!DOCTYPE html><html xmlns:o="urn:schemas-microsoft-com:office:office" xmlns:w="urn:schemas-microsoft-com:office:word" xmlns="http://www.w3.org/TR/REC-html40"><head><meta charset="UTF-8"><title>${title}</title><style>body{font-family:'맑은 고딕',sans-serif;font-size:10pt;color:#1a1a2e;}h1{font-size:15pt;color:#0f1f3d;border-bottom:2px solid #0f1f3d;padding-bottom:5pt;}h2{font-size:12pt;color:#0f1f3d;border-bottom:1px solid #ccc;margin-top:12pt;}table{width:100%;border-collapse:collapse;margin:8pt 0;font-size:9pt;}th{background:#0f1f3d;color:white;padding:5pt 8pt;text-align:left;}td{padding:5pt 8pt;border:1px solid #ddd;}ul{margin:4pt 0 8pt 16pt;}li{margin-bottom:3pt;}</style></head><body><h1>${title}</h1><p style="font-size:9pt;color:#555;margin-bottom:12pt;">${info.date ? `일자: ${info.date} ${info.time}` : ''}${info.attendees ? ` | 참석: ${info.attendees}` : ''}${info.dept ? ` | 부서: ${info.dept}` : ''}</p>${content}</body></html>`;
+
+  const metaParts = [];
+  if (info.date) metaParts.push(`일자: ${info.date} ${info.time}`);
+  if (info.attendees) metaParts.push(`참석: ${info.attendees}`);
+  if (info.dept) metaParts.push(`부서: ${info.dept}`);
+
+  const html = `<!DOCTYPE html>
+<html xmlns:o="urn:schemas-microsoft-com:office:office"
+      xmlns:w="urn:schemas-microsoft-com:office:word"
+      xmlns="http://www.w3.org/TR/REC-html40">
+<head>
+  <meta charset="UTF-8">
+  <title>${title}</title>
+  <!--[if gte mso 9]>
+  <xml><w:WordDocument><w:View>Print</w:View><w:Zoom>100</w:Zoom></w:WordDocument></xml>
+  <![endif]-->
+  <style>
+    body { font-family: '맑은 고딕', sans-serif; font-size: 10pt; color: #1a1a2e; margin: 2cm; }
+    h1 { font-size: 16pt; color: #0f1f3d; border-bottom: 2px solid #0f1f3d; padding-bottom: 6pt; margin-bottom: 6pt; }
+    h2 { font-size: 12pt; color: #0f1f3d; border-bottom: 1px solid #ccc; margin-top: 14pt; padding-bottom: 3pt; }
+    .meta { font-size: 9pt; color: #666; margin-bottom: 16pt; }
+    table { width: 100%; border-collapse: collapse; margin: 8pt 0 14pt; font-size: 9pt; }
+    th { background: #0f1f3d; color: white; padding: 5pt 8pt; text-align: left; }
+    td { padding: 5pt 8pt; border: 1px solid #ccc; vertical-align: top; }
+    tr:nth-child(even) td { background: #f5f5f5; }
+    ul { margin: 4pt 0 8pt 16pt; }
+    li { margin-bottom: 3pt; }
+    strong { color: #0f1f3d; }
+  </style>
+</head>
+<body>
+  <h1>${title}</h1>
+  <div class="meta">${metaParts.join(' &nbsp;|&nbsp; ')}</div>
+  ${content}
+</body>
+</html>`;
+
+  // BOM(Byte Order Mark) 추가 → Word에서 한글 깨짐 방지
+  const bom = '\uFEFF';
+  const blob = new Blob([bom + html], { type: 'application/msword;charset=utf-8' });
   const a = document.createElement('a');
-  a.href = URL.createObjectURL(new Blob([html], { type: 'application/msword;charset=utf-8' }));
+  a.href = URL.createObjectURL(blob);
   a.download = `회의록_${title}_${info.date}.doc`;
+  document.body.appendChild(a);
   a.click();
+  document.body.removeChild(a);
   URL.revokeObjectURL(a.href);
 }
 
