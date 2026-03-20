@@ -12,32 +12,621 @@
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   :root {
-    --navy: #0f1f3d; --navy-mid: #1a3260; --gold: #c9a84c; --gold-light: #e8c97a;
-    --cream: #f8f5ef; --white: #ffffff; --gray-100: #f4f4f6; --gray-200: #e8e8ec;
-    --text: #1a1a2e; --shadow: 0 4px 24px rgba(15,31,61,0.12);
+    --navy: #0f1f3d;
+    --navy-mid: #1a3260;
+    --navy-light: #243d73;
+    --gold: #c9a84c;
+    --gold-light: #e8c97a;
+    --cream: #f8f5ef;
+    --white: #ffffff;
+    --gray-100: #f4f4f6;
+    --gray-200: #e8e8ec;
+    --gray-400: #9999aa;
+    --gray-600: #555566;
+    --text: #1a1a2e;
+    --success: #2e7d52;
+    --danger: #c0392b;
+    --shadow: 0 4px 24px rgba(15,31,61,0.12);
+    --shadow-lg: 0 12px 48px rgba(15,31,61,0.18);
   }
+
   * { margin: 0; padding: 0; box-sizing: border-box; }
-  body { font-family: 'Noto Sans KR', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
-  header { background: var(--navy); padding: 18px 32px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(0,0,0,0.3); }
-  .header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
-  .logo { display: flex; align-items: center; gap: 14px; }
-  .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-  .logo-text { font-family: 'Noto Serif KR', serif; font-size: 20px; font-weight: 700; color: var(--white); }
-  .logo-sub { font-size: 11px; color: var(--gold-light); text-transform: uppercase; }
+
+  body {
+    font-family: 'Noto Sans KR', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--navy);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 20px rgba(0,0,0,0.3);
+  }
+  .header-inner {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 18px 32px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .logo {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+  .logo-icon {
+    width: 40px;
+    height: 40px;
+    background: linear-gradient(135deg, var(--gold), var(--gold-light));
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+  }
+  .logo-text {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--white);
+    letter-spacing: -0.3px;
+  }
+  .logo-sub {
+    font-size: 11px;
+    color: var(--gold-light);
+    font-weight: 300;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    margin-top: 2px;
+  }
+  .header-actions {
+    display: flex;
+    gap: 10px;
+  }
+  .btn-settings {
+    background: rgba(255,255,255,0.1);
+    border: 1px solid rgba(255,255,255,0.2);
+    color: var(--white);
+    padding: 8px 18px;
+    border-radius: 8px;
+    font-size: 13px;
+    cursor: pointer;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: all 0.2s;
+  }
+  .btn-settings:hover { background: rgba(255,255,255,0.18); }
+
+  /* ── SETTINGS MODAL ── */
+  .modal-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.6);
+    z-index: 1000;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.active { display: flex; }
+  .modal {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 40px;
+    width: 520px;
+    max-width: 90vw;
+    box-shadow: var(--shadow-lg);
+  }
+  .modal h3 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 20px;
+    color: var(--navy);
+    margin-bottom: 8px;
+  }
+  .modal p.sub { font-size: 13px; color: var(--gray-600); margin-bottom: 28px; line-height: 1.6; }
+  .modal-field { margin-bottom: 20px; }
+  .modal-field label { display: block; font-size: 13px; font-weight: 600; color: var(--navy); margin-bottom: 8px; }
+  .modal-field input {
+    width: 100%;
+    padding: 12px 16px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: border-color 0.2s;
+  }
+  .modal-field input:focus { outline: none; border-color: var(--navy-mid); }
+  .modal-field .hint { font-size: 12px; color: var(--gray-400); margin-top: 6px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 28px; }
+  .btn-cancel { background: var(--gray-100); border: none; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; font-size: 14px; color: var(--gray-600); }
+  .btn-save { background: var(--navy); border: none; padding: 10px 22px; border-radius: 8px; cursor: pointer; font-family: 'Noto Sans KR', sans-serif; font-size: 14px; color: var(--white); font-weight: 600; }
+
+  /* ── MAIN LAYOUT ── */
   main { max-width: 1200px; margin: 0 auto; padding: 40px 32px; }
-  .card { background: var(--white); border-radius: 20px; padding: 32px; margin-bottom: 28px; box-shadow: var(--shadow); border: 1px solid rgba(201,168,76,0.2); }
-  .info-grid { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 16px; }
-  .tab-bar { display: flex; gap: 6px; margin-bottom: 28px; background: var(--gray-100); padding: 5px; border-radius: 14px; }
-  .tab-btn { flex: 1; padding: 11px; border: none; background: transparent; border-radius: 10px; cursor: pointer; }
-  .tab-btn.active { background: var(--navy); color: white; }
-  .upload-area { border: 2px dashed var(--gray-200); border-radius: 16px; padding: 48px; text-align: center; cursor: pointer; }
-  .btn-generate { background: linear-gradient(135deg, var(--navy), var(--navy-mid)); color: white; padding: 18px 56px; border-radius: 50px; font-weight: 700; cursor: pointer; border: none; width: 100%; font-size: 18px; }
-  .result-card { background: white; border-radius: 20px; padding: 40px; box-shadow: var(--shadow); display: none; margin-top: 30px; }
+
+  /* ── MEETING INFO ── */
+  .meeting-info-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 32px 36px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(201,168,76,0.2);
+  }
+  .card-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--navy);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .card-title::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 18px;
+    background: linear-gradient(to bottom, var(--gold), var(--gold-light));
+    border-radius: 2px;
+  }
+  .info-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 2fr;
+    gap: 16px;
+  }
+  .info-field label { display: block; font-size: 12px; font-weight: 600; color: var(--gray-600); margin-bottom: 8px; letter-spacing: 0.3px; }
+  .info-field input, .info-field textarea {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 10px;
+    font-size: 14px;
+    font-family: 'Noto Sans KR', sans-serif;
+    color: var(--text);
+    transition: border-color 0.2s;
+    background: var(--gray-100);
+  }
+  .info-field input:focus, .info-field textarea:focus {
+    outline: none;
+    border-color: var(--navy-mid);
+    background: var(--white);
+  }
+
+  /* ── INPUT SECTION ── */
+  .input-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 32px 36px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow);
+  }
+
+  /* Tabs */
+  .tab-bar {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 28px;
+    background: var(--gray-100);
+    padding: 5px;
+    border-radius: 14px;
+  }
+  .tab-btn {
+    flex: 1;
+    padding: 11px 8px;
+    border: none;
+    background: transparent;
+    border-radius: 10px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--gray-600);
+    cursor: pointer;
+    transition: all 0.25s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    white-space: nowrap;
+  }
+  .tab-btn.active {
+    background: var(--navy);
+    color: var(--white);
+    box-shadow: 0 2px 10px rgba(15,31,61,0.25);
+  }
+  .tab-btn:hover:not(.active) { background: var(--gray-200); }
+
+  .tab-panel { display: none; }
+  .tab-panel.active { display: block; }
+
+  /* Recording */
+  .record-area {
+    text-align: center;
+    padding: 40px 20px;
+  }
+  .record-btn {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    border: none;
+    background: linear-gradient(135deg, var(--navy), var(--navy-mid));
+    color: var(--white);
+    font-size: 32px;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(15,31,61,0.3);
+    transition: all 0.3s;
+    position: relative;
+    margin: 0 auto 20px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .record-btn.recording {
+    background: linear-gradient(135deg, #c0392b, #e74c3c);
+    animation: pulse 1.5s infinite;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 6px 24px rgba(192,57,43,0.4); transform: scale(1); }
+    50% { box-shadow: 0 6px 40px rgba(192,57,43,0.6); transform: scale(1.05); }
+  }
+  .record-status { font-size: 14px; color: var(--gray-600); margin-bottom: 8px; }
+  .record-time { font-size: 28px; font-weight: 700; color: var(--navy); font-variant-numeric: tabular-nums; }
+  .transcript-preview {
+    margin-top: 20px;
+    padding: 16px;
+    background: var(--gray-100);
+    border-radius: 12px;
+    font-size: 13px;
+    color: var(--gray-600);
+    text-align: left;
+    min-height: 60px;
+    line-height: 1.7;
+    max-height: 120px;
+    overflow-y: auto;
+  }
+
+  /* Upload areas */
+  .upload-area {
+    border: 2px dashed var(--gray-200);
+    border-radius: 16px;
+    padding: 48px 24px;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+  }
+  .upload-area:hover, .upload-area.drag-over {
+    border-color: var(--navy-mid);
+    background: rgba(26,50,96,0.03);
+  }
+  .upload-area input[type="file"] {
+    position: absolute;
+    inset: 0;
+    opacity: 0;
+    cursor: pointer;
+    width: 100%;
+    height: 100%;
+  }
+  .upload-icon { font-size: 40px; margin-bottom: 14px; }
+  .upload-title { font-size: 15px; font-weight: 600; color: var(--navy); margin-bottom: 6px; }
+  .upload-sub { font-size: 13px; color: var(--gray-400); }
+  .upload-sub span { color: var(--navy-mid); font-weight: 600; }
+  .file-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: rgba(46,125,82,0.1);
+    color: var(--success);
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    margin-top: 14px;
+  }
+
+  /* Textarea */
+  .paste-area {
+    width: 100%;
+    min-height: 200px;
+    padding: 18px;
+    border: 1.5px solid var(--gray-200);
+    border-radius: 14px;
+    font-family: 'Noto Sans KR', sans-serif;
+    font-size: 14px;
+    line-height: 1.8;
+    color: var(--text);
+    resize: vertical;
+    transition: border-color 0.2s;
+  }
+  .paste-area:focus { outline: none; border-color: var(--navy-mid); }
+
+  /* ── VERSION SELECTOR ── */
+  .version-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 32px 36px;
+    margin-bottom: 28px;
+    box-shadow: var(--shadow);
+  }
+  .version-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 14px;
+  }
+  .version-option {
+    border: 2px solid var(--gray-200);
+    border-radius: 14px;
+    padding: 20px 16px;
+    cursor: pointer;
+    transition: all 0.25s;
+    position: relative;
+  }
+  .version-option:hover { border-color: var(--navy-light); }
+  .version-option.selected {
+    border-color: var(--navy);
+    background: rgba(15,31,61,0.04);
+  }
+  .version-option.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 12px;
+    right: 14px;
+    width: 22px;
+    height: 22px;
+    background: var(--navy);
+    color: var(--white);
+    border-radius: 50%;
+    font-size: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .version-icon { font-size: 24px; margin-bottom: 10px; }
+  .version-name { font-size: 15px; font-weight: 700; color: var(--navy); margin-bottom: 6px; }
+  .version-desc { font-size: 12px; color: var(--gray-600); line-height: 1.5; }
+
+  /* ── GENERATE BUTTON ── */
+  .generate-wrap { text-align: center; margin-bottom: 32px; }
+  .btn-generate {
+    background: linear-gradient(135deg, var(--navy), var(--navy-mid));
+    color: var(--white);
+    border: none;
+    padding: 18px 56px;
+    border-radius: 50px;
+    font-size: 16px;
+    font-weight: 700;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    box-shadow: 0 6px 24px rgba(15,31,61,0.3);
+    transition: all 0.3s;
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    letter-spacing: -0.3px;
+  }
+  .btn-generate:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(15,31,61,0.35); }
+  .btn-generate:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+  .btn-generate .spinner {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(255,255,255,0.3);
+    border-top-color: white;
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+    display: none;
+  }
+  .btn-generate.loading .spinner { display: inline-block; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+
+  /* ── RESULT ── */
+  .result-card {
+    background: var(--white);
+    border-radius: 20px;
+    padding: 36px 40px;
+    box-shadow: var(--shadow);
+    display: none;
+    border: 1px solid rgba(201,168,76,0.25);
+  }
   .result-card.visible { display: block; }
+  .result-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 28px;
+    padding-bottom: 20px;
+    border-bottom: 1.5px solid var(--gray-200);
+  }
+  .result-title-area {}
+  .result-badge {
+    font-size: 11px;
+    background: var(--navy);
+    color: var(--gold-light);
+    padding: 4px 12px;
+    border-radius: 20px;
+    font-weight: 600;
+    letter-spacing: 0.5px;
+    margin-bottom: 8px;
+    display: inline-block;
+  }
+  .result-meeting-title {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 22px;
+    font-weight: 700;
+    color: var(--navy);
+  }
+  .result-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+  .btn-action {
+    padding: 10px 18px;
+    border-radius: 10px;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: 'Noto Sans KR', sans-serif;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .btn-edit { background: var(--gray-100); color: var(--navy); border: 1.5px solid var(--gray-200); }
+  .btn-edit:hover { background: var(--gray-200); }
+  .btn-edit.active { background: var(--navy); color: var(--white); border-color: var(--navy); }
+  .btn-pdf { background: #c0392b; color: var(--white); }
+  .btn-pdf:hover { background: #a93226; }
+  .btn-word { background: #2155a0; color: var(--white); }
+  .btn-word:hover { background: #1a4080; }
+  .btn-regen { background: linear-gradient(135deg, var(--gold), var(--gold-light)); color: var(--navy); }
+  .btn-regen:hover { opacity: 0.9; }
+
+  /* Result Content */
+  .result-meta {
+    display: flex;
+    gap: 28px;
+    margin-bottom: 28px;
+    padding: 16px 20px;
+    background: var(--gray-100);
+    border-radius: 12px;
+    font-size: 13px;
+    flex-wrap: wrap;
+  }
+  .result-meta-item { display: flex; align-items: center; gap: 6px; color: var(--gray-600); }
+  .result-meta-item strong { color: var(--navy); }
+
+  #resultContent {
+    line-height: 1.8;
+    font-size: 14px;
+    color: var(--text);
+  }
+  #resultContent[contenteditable="true"] {
+    outline: 2px dashed var(--navy-mid);
+    border-radius: 12px;
+    padding: 16px;
+    min-height: 200px;
+  }
+
+  /* Markdown-like styling in result */
+  #resultContent h2 {
+    font-family: 'Noto Serif KR', serif;
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--navy);
+    margin: 24px 0 12px;
+    padding-bottom: 8px;
+    border-bottom: 1.5px solid var(--gray-200);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  #resultContent h2::before {
+    content: '';
+    display: inline-block;
+    width: 4px;
+    height: 16px;
+    background: var(--gold);
+    border-radius: 2px;
+  }
+  #resultContent table {
+    width: 100%;
+    border-collapse: collapse;
+    margin: 12px 0 20px;
+    font-size: 13px;
+  }
+  #resultContent th {
+    background: var(--navy);
+    color: var(--white);
+    padding: 10px 14px;
+    text-align: left;
+    font-weight: 600;
+    font-size: 12px;
+  }
+  #resultContent td {
+    padding: 10px 14px;
+    border-bottom: 1px solid var(--gray-200);
+    vertical-align: top;
+  }
+  #resultContent tr:nth-child(even) td { background: var(--gray-100); }
+  #resultContent ul { margin: 8px 0 12px 20px; }
+  #resultContent li { margin-bottom: 4px; }
+  #resultContent p { margin-bottom: 12px; }
+  #resultContent strong { color: var(--navy); }
+
+  /* ── ALERTS ── */
+  .alert {
+    padding: 14px 18px;
+    border-radius: 12px;
+    font-size: 13px;
+    margin-bottom: 20px;
+    display: none;
+  }
+  .alert.error { background: #fdf0ef; border: 1px solid #f5c6c2; color: var(--danger); }
+  .alert.success { background: #edf7f2; border: 1px solid #a3d9b8; color: var(--success); }
+  .alert.warning { background: #fefbec; border: 1px solid #f0d88a; color: #7d5c00; }
+  .alert.show { display: block; }
+
+  /* ── VERSION TABS IN RESULT ── */
+  .version-tabs-result {
+    display: flex;
+    gap: 6px;
+    margin-bottom: 20px;
+  }
+  .vtab {
+    padding: 7px 16px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 600;
+    border: 1.5px solid var(--gray-200);
+    cursor: pointer;
+    color: var(--gray-600);
+    background: transparent;
+    font-family: 'Noto Sans KR', sans-serif;
+    transition: all 0.2s;
+  }
+  .vtab.active { background: var(--navy); color: var(--white); border-color: var(--navy); }
+
+  /* Loading overlay */
+  .loading-overlay {
+    display: none;
+    position: fixed;
+    inset: 0;
+    background: rgba(15,31,61,0.7);
+    z-index: 500;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 20px;
+  }
+  .loading-overlay.active { display: flex; }
+  .loading-spinner {
+    width: 56px;
+    height: 56px;
+    border: 4px solid rgba(255,255,255,0.2);
+    border-top-color: var(--gold);
+    border-radius: 50%;
+    animation: spin 0.8s linear infinite;
+  }
+  .loading-text { color: var(--white); font-size: 15px; font-weight: 500; }
+  .loading-sub { color: rgba(255,255,255,0.6); font-size: 13px; }
+
+  /* Responsive */
+  @media (max-width: 768px) {
+    main { padding: 24px 16px; }
+    .info-grid { grid-template-columns: 1fr 1fr; }
+    .version-grid { grid-template-columns: 1fr; }
+    .tab-btn span.tab-label { display: none; }
+    .result-header { flex-direction: column; gap: 16px; align-items: flex-start; }
+  }
 </style>
 </head>
 <body>
 
+<!-- HEADER -->
 <header>
   <div class="header-inner">
     <div class="logo">
@@ -47,119 +636,730 @@
         <div class="logo-sub">AI Meeting Minutes Generator</div>
       </div>
     </div>
+    <div class="header-actions">
+      <button class="btn-settings" onclick="openSettings()">⚙️ API 키 설정</button>
+    </div>
   </div>
 </header>
 
-<main>
-  <div class="card">
-    <div class="info-grid">
-      <div style="grid-column: span 3; font-weight: bold; margin-bottom: 10px;">📅 회의 기본 정보</div>
-      <input type="date" id="meetingDate">
-      <input type="time" id="meetingTime">
-      <input type="text" id="meetingTitle" placeholder="회의 제목 입력">
-      <input type="text" id="meetingAttendees" placeholder="참석자 입력" style="grid-column: span 3; margin-top: 10px;">
+<!-- SETTINGS MODAL -->
+<div class="modal-overlay" id="settingsModal">
+  <div class="modal">
+    <h3>🔑 API 키 설정</h3>
+    <p class="sub">
+      회의록 생성을 위해 API 키가 필요합니다.<br>
+      입력된 키는 브라우저 로컬에만 저장되며 외부로 전송되지 않습니다.
+    </p>
+    <div class="modal-field">
+      <label>Google Gemini API 키 <span style="color:var(--danger)">*필수</span></label>
+      <input type="password" id="claudeKeyInput" placeholder="AIza..." />
+      <div class="hint">→ aistudio.google.com 에서 발급 (무료 티어 있음)</div>
+    </div>
+    <div class="modal-field">
+      <label>OpenAI Whisper API 키 <span style="color:var(--gray-400)">(음성파일 업로드 시 필요)</span></label>
+      <input type="password" id="openaiKeyInput" placeholder="sk-..." />
+      <div class="hint">→ platform.openai.com 에서 발급 / 음성파일 업로드 기능 사용 시만 필요</div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeSettings()">취소</button>
+      <button class="btn-save" onclick="saveSettings()">저장</button>
     </div>
   </div>
+</div>
 
-  <div class="card">
-    <div class="tab-bar">
-      <button class="tab-btn active" onclick="switchTab('docs', this)">📄 자료 업로드</button>
-      <button class="tab-btn" onclick="switchTab('paste', this)">✏️ 직접 입력</button>
-    </div>
-    <div id="tab-docs" class="tab-panel active">
-      <div class="upload-area" onclick="document.getElementById('docsFile').click()">
-        <input type="file" id="docsFile" accept=".docx,.xlsx,.txt" multiple onchange="handleDocsFile(this)">
-        <div class="upload-title">워드나 엑셀 파일을 여기에 올리세요</div>
-        <div id="docsBadge"></div>
+<!-- LOADING -->
+<div class="loading-overlay" id="loadingOverlay">
+  <div class="loading-spinner"></div>
+  <div class="loading-text" id="loadingText">회의록 생성 중...</div>
+  <div class="loading-sub" id="loadingSubText">Claude AI가 내용을 분석하고 있습니다</div>
+</div>
+
+<!-- MAIN -->
+<main>
+
+  <div class="alert warning show" id="apiWarning">
+    ⚠️ API 키가 설정되지 않았습니다. 우측 상단 <strong>API 키 설정</strong>을 클릭해 Gemini API 키를 입력해주세요.
+  </div>
+
+  <!-- 1. 회의 정보 -->
+  <div class="meeting-info-card">
+    <div class="card-title">회의 기본 정보</div>
+    <div class="info-grid">
+      <div class="info-field">
+        <label>📅 회의 일자</label>
+        <input type="date" id="meetingDate" />
+      </div>
+      <div class="info-field">
+        <label>🕐 시간</label>
+        <input type="time" id="meetingTime" />
+      </div>
+      <div class="info-field">
+        <label>📌 회의 제목</label>
+        <input type="text" id="meetingTitle" placeholder="예) 2024 동반성장 밸류업 실무자과정" />
+      </div>
+      <div class="info-field" style="grid-column: span 2;">
+        <label>👥 참석자 / 참석팀</label>
+        <input type="text" id="meetingAttendees" placeholder="예) 상생구매팀, 홍길동 차장, 김영희 과장" />
+      </div>
+      <div class="info-field">
+        <label>📁 작성부서</label>
+        <input type="text" id="meetingDept" placeholder="예) ESG팀" />
       </div>
     </div>
-    <div id="tab-paste" class="tab-panel" style="display:none;">
-      <textarea id="pasteText" style="width:100%; height:200px; border-radius:12px; padding:15px;" placeholder="내용을 입력하세요..."></textarea>
+  </div>
+
+  <!-- 2. 입력 방식 -->
+  <div class="input-card">
+    <div class="card-title">회의 내용 입력</div>
+
+    <div class="tab-bar">
+      <button class="tab-btn active" onclick="switchTab('record', this)">
+        🎙️ <span class="tab-label">실시간 녹음</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('audio', this)">
+        🎵 <span class="tab-label">음성파일 업로드</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('docs', this)">
+        📄 <span class="tab-label">자료 업로드</span>
+      </button>
+      <button class="tab-btn" onclick="switchTab('paste', this)">
+        ✏️ <span class="tab-label">텍스트 직접 입력</span>
+      </button>
+    </div>
+
+    <!-- 실시간 녹음 -->
+    <div class="tab-panel active" id="tab-record">
+      <div class="record-area">
+        <button class="record-btn" id="recordBtn" onclick="toggleRecording()">🎙️</button>
+        <div class="record-status" id="recordStatus">버튼을 눌러 녹음 시작</div>
+        <div class="record-time" id="recordTime">00:00</div>
+        <div class="transcript-preview" id="transcriptPreview">녹음된 내용이 여기에 실시간으로 표시됩니다...</div>
+        <p style="font-size:12px;color:var(--gray-400);margin-top:12px;">Chrome 브라우저 권장 · 마이크 권한 허용 필요</p>
+      </div>
+    </div>
+
+    <!-- 음성파일 업로드 -->
+    <div class="tab-panel" id="tab-audio">
+      <div class="upload-area" id="audioUploadArea">
+        <input type="file" id="audioFile" accept="audio/*,.mp3,.mp4,.wav,.m4a,.ogg,.webm" onchange="handleAudioFile(this)">
+        <div class="upload-icon">🎵</div>
+        <div class="upload-title">음성 파일을 드래그하거나 클릭하여 업로드</div>
+        <div class="upload-sub">지원 형식: <span>MP3, MP4, WAV, M4A, OGG</span> · OpenAI Whisper API 필요</div>
+        <div id="audioBadge"></div>
+      </div>
+      <p style="font-size:12px;color:var(--gray-400);margin-top:12px;text-align:center;">
+        음성파일 변환에는 OpenAI Whisper API 키가 필요합니다. API 키 설정에서 입력해주세요.
+      </p>
+    </div>
+
+    <!-- 자료 업로드 -->
+    <div class="tab-panel" id="tab-docs">
+      <div class="upload-area" id="docsUploadArea">
+        <input type="file" id="docsFile" accept=".docx,.xlsx,.xls,.txt,.csv" multiple onchange="handleDocsFile(this)">
+        <div class="upload-icon">📄</div>
+        <div class="upload-title">파일을 드래그하거나 클릭하여 업로드</div>
+        <div class="upload-sub">지원 형식: <span>Word (.docx), Excel (.xlsx/.xls), 텍스트 (.txt), CSV</span></div>
+        <div id="docsBadge"></div>
+      </div>
+      <div id="docsPreview" style="margin-top:16px;padding:14px;background:var(--gray-100);border-radius:12px;font-size:12px;color:var(--gray-600);display:none;max-height:120px;overflow-y:auto;line-height:1.7;"></div>
+    </div>
+
+    <!-- 텍스트 직접 입력 -->
+    <div class="tab-panel" id="tab-paste">
+      <textarea class="paste-area" id="pasteText" placeholder="회의 내용, 메모, 녹취록 등을 여기에 붙여넣거나 직접 입력하세요...&#10;&#10;예) 참석자 발언, 논의된 안건, 결정사항 등을 자유롭게 입력하면 AI가 회의록으로 정리합니다."></textarea>
+    </div>
+
+  </div>
+
+  <!-- 3. 버전 선택 -->
+  <div class="version-card">
+    <div class="card-title">회의록 버전 선택</div>
+    <div class="version-grid">
+      <div class="version-option" id="v-detailed" onclick="selectVersion('detailed')">
+        <div class="version-icon">🔬</div>
+        <div class="version-name">정밀 회의록</div>
+        <div class="version-desc">모든 논의 내용, 표, Action Items, 상세 맥락까지 완전히 기록</div>
+      </div>
+      <div class="version-option selected" id="v-standard" onclick="selectVersion('standard')">
+        <div class="version-icon">📋</div>
+        <div class="version-name">일반 회의록</div>
+        <div class="version-desc">주요 논의사항을 표 형태로 정리. 실무에서 가장 많이 사용하는 형식</div>
+      </div>
+      <div class="version-option" id="v-summary" onclick="selectVersion('summary')">
+        <div class="version-icon">⚡</div>
+        <div class="version-name">핵심 요약</div>
+        <div class="version-desc">핵심만 간결하게. 임원 보고 또는 빠른 공유용</div>
+      </div>
     </div>
   </div>
 
-  <button class="btn-generate" onclick="generateMinutes()">✨ 회의록 생성 시작</button>
+  <!-- 4. 생성 버튼 -->
+  <div class="generate-wrap">
+    <button class="btn-generate" id="generateBtn" onclick="generateMinutes()">
+      <div class="spinner"></div>
+      ✨ 회의록 생성
+    </button>
+  </div>
 
+  <!-- 5. 결과 -->
   <div class="result-card" id="resultCard">
-    <div id="resultContent" style="line-height:1.8;"></div>
-    <div style="margin-top:20px; display:flex; gap:10px;">
-      <button onclick="exportWord()" style="padding:10px 20px; border-radius:8px; cursor:pointer; background:#2155a0; color:white; border:none;">📝 Word 저장</button>
-      <button onclick="window.print()" style="padding:10px 20px; border-radius:8px; cursor:pointer;">📥 PDF 인쇄</button>
+    <div class="result-header">
+      <div class="result-title-area">
+        <div class="result-badge" id="resultVersionBadge">📋 일반 회의록</div>
+        <div class="result-meeting-title" id="resultMeetingTitle">회의록</div>
+      </div>
+      <div class="result-actions">
+        <button class="btn-action btn-edit" id="editBtn" onclick="toggleEdit()">✏️ 수정</button>
+        <button class="btn-action btn-regen" onclick="generateMinutes()">🔄 재생성</button>
+        <button class="btn-action btn-pdf" onclick="exportPDF()">📥 PDF 저장</button>
+        <button class="btn-action btn-word" onclick="exportWord()">📝 Word 저장</button>
+      </div>
     </div>
+
+    <div class="result-meta" id="resultMeta"></div>
+
+    <div class="version-tabs-result" id="versionTabsResult">
+      <button class="vtab" onclick="switchResultVersion('detailed')">🔬 정밀</button>
+      <button class="vtab active" onclick="switchResultVersion('standard')">📋 일반</button>
+      <button class="vtab" onclick="switchResultVersion('summary')">⚡ 핵심요약</button>
+    </div>
+
+    <div id="resultContent"></div>
   </div>
+
 </main>
 
 <script>
-let state = { extractedText: '', selectedVersion: 'standard' };
+// ── STATE ──
+let state = {
+  claudeKey: '',
+  openaiKey: '',
+  activeTab: 'paste',
+  selectedVersion: 'standard',
+  isRecording: false,
+  recordTimer: null,
+  recordSeconds: 0,
+  recordedText: '',
+  extractedText: '',
+  audioFile: null,
+  generatedVersions: {},
+  isEditing: false,
+  recognition: null
+};
 
+// ── INIT ──
+document.addEventListener('DOMContentLoaded', () => {
+  state.claudeKey = localStorage.getItem('claude_api_key') || '';
+  state.openaiKey = localStorage.getItem('openai_api_key') || '';
+  if (state.claudeKey) document.getElementById('apiWarning').classList.remove('show');
+
+  // Set today's date and current time
+  const now = new Date();
+  document.getElementById('meetingDate').value = now.toISOString().split('T')[0];
+  document.getElementById('meetingTime').value = now.toTimeString().slice(0,5);
+
+  // Drag & drop
+  setupDragDrop('audioUploadArea', 'audioFile', handleAudioFile);
+  setupDragDrop('docsUploadArea', 'docsFile', handleDocsFile);
+});
+
+// ── SETTINGS ──
+function openSettings() {
+  document.getElementById('claudeKeyInput').value = state.claudeKey;
+  document.getElementById('openaiKeyInput').value = state.openaiKey;
+  document.getElementById('settingsModal').classList.add('active');
+}
+function closeSettings() {
+  document.getElementById('settingsModal').classList.remove('active');
+}
+function saveSettings() {
+  state.claudeKey = document.getElementById('claudeKeyInput').value.trim();
+  state.openaiKey = document.getElementById('openaiKeyInput').value.trim();
+  localStorage.setItem('claude_api_key', state.claudeKey);
+  localStorage.setItem('openai_api_key', state.openaiKey);
+  closeSettings();
+  if (state.claudeKey) {
+    document.getElementById('apiWarning').classList.remove('show');
+  }
+}
+
+// ── TABS ──
+function switchTab(tab, btn) {
+  state.activeTab = tab;
+  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
+  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+  btn.classList.add('active');
+  document.getElementById('tab-' + tab).classList.add('active');
+}
+
+// ── VERSION ──
+function selectVersion(v) {
+  state.selectedVersion = v;
+  document.querySelectorAll('.version-option').forEach(el => el.classList.remove('selected'));
+  document.getElementById('v-' + v).classList.add('selected');
+}
+
+// ── RECORDING ──
+function toggleRecording() {
+  if (!state.isRecording) startRecording();
+  else stopRecording();
+}
+
+function startRecording() {
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SpeechRecognition) {
+    alert('음성 인식은 Chrome 브라우저에서만 지원됩니다.');
+    return;
+  }
+  state.recognition = new SpeechRecognition();
+  state.recognition.lang = 'ko-KR';
+  state.recognition.continuous = true;
+  state.recognition.interimResults = true;
+
+  let finalTranscript = '';
+  state.recognition.onresult = (e) => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      if (e.results[i].isFinal) finalTranscript += e.results[i][0].transcript + ' ';
+      else interim += e.results[i][0].transcript;
+    }
+    document.getElementById('transcriptPreview').textContent = finalTranscript + interim;
+    state.recordedText = finalTranscript;
+  };
+  state.recognition.onerror = (e) => console.error('음성 인식 오류:', e.error);
+  state.recognition.start();
+
+  state.isRecording = true;
+  state.recordSeconds = 0;
+  document.getElementById('recordBtn').classList.add('recording');
+  document.getElementById('recordBtn').textContent = '⏹️';
+  document.getElementById('recordStatus').textContent = '🔴 녹음 중...';
+
+  state.recordTimer = setInterval(() => {
+    state.recordSeconds++;
+    const m = String(Math.floor(state.recordSeconds / 60)).padStart(2,'0');
+    const s = String(state.recordSeconds % 60).padStart(2,'0');
+    document.getElementById('recordTime').textContent = m + ':' + s;
+  }, 1000);
+}
+
+function stopRecording() {
+  if (state.recognition) state.recognition.stop();
+  clearInterval(state.recordTimer);
+  state.isRecording = false;
+  document.getElementById('recordBtn').classList.remove('recording');
+  document.getElementById('recordBtn').textContent = '🎙️';
+  document.getElementById('recordStatus').textContent = '녹음 완료 ✓ 회의록 생성 버튼을 눌러주세요';
+  state.extractedText = state.recordedText;
+}
+
+// ── AUDIO FILE ──
+async function handleAudioFile(input) {
+  const file = input.files ? input.files[0] : input;
+  if (!file) return;
+  state.audioFile = file;
+  document.getElementById('audioBadge').innerHTML = `<div class="file-badge">✅ ${file.name}</div>`;
+
+  if (!state.openaiKey) {
+    alert('음성 파일 변환에는 OpenAI Whisper API 키가 필요합니다.\nAPI 키 설정에서 입력해주세요.');
+    return;
+  }
+  showLoading('음성 파일 변환 중...', 'Whisper AI가 음성을 텍스트로 변환하고 있습니다');
+  try {
+    const text = await transcribeWithWhisper(file);
+    state.extractedText = text;
+    document.getElementById('audioBadge').innerHTML += `<p style="margin-top:10px;font-size:12px;color:var(--success)">✓ 변환 완료 (${text.length}자)</p>`;
+  } catch(e) {
+    alert('변환 실패: ' + e.message);
+  } finally {
+    hideLoading();
+  }
+}
+
+async function transcribeWithWhisper(file) {
+  const formData = new FormData();
+  formData.append('file', file);
+  formData.append('model', 'whisper-1');
+  formData.append('language', 'ko');
+
+  const response = await fetch('https://api.openai.com/v1/audio/transcriptions', {
+    method: 'POST',
+    headers: { 'Authorization': 'Bearer ' + state.openaiKey },
+    body: formData
+  });
+  if (!response.ok) throw new Error('Whisper API 오류: ' + response.status);
+  const data = await response.json();
+  return data.text;
+}
+
+// ── DOCS FILE ──
 async function handleDocsFile(input) {
-  const files = input.files;
+  const files = input.files || [input];
+  if (!files.length) return;
+
   let combined = '';
+  const badges = [];
+
   for (const file of files) {
-    if (file.name.endsWith('.docx')) {
-      const buffer = await file.arrayBuffer();
-      const res = await mammoth.extractRawText({ arrayBuffer: buffer });
-      combined += `\n[문서: ${file.name}]\n${res.value}`;
-    } else if (file.name.endsWith('.xlsx')) {
-      const buffer = await file.arrayBuffer();
-      const wb = XLSX.read(buffer, { type: 'array' });
-      wb.SheetNames.forEach(n => {
-        combined += `\n[시트: ${n}]\n${XLSX.utils.sheet_to_csv(wb.Sheets[n])}`;
-      });
+    try {
+      let text = '';
+      const ext = file.name.split('.').pop().toLowerCase();
+
+      if (ext === 'docx') {
+        const arrayBuffer = await file.arrayBuffer();
+        const result = await mammoth.extractRawText({ arrayBuffer });
+        text = result.value;
+      } else if (ext === 'xlsx' || ext === 'xls') {
+        const arrayBuffer = await file.arrayBuffer();
+        const wb = XLSX.read(arrayBuffer, { type: 'array' });
+        wb.SheetNames.forEach(name => {
+          const ws = wb.Sheets[name];
+          text += `[시트: ${name}]\n` + XLSX.utils.sheet_to_csv(ws) + '\n\n';
+        });
+      } else if (ext === 'txt' || ext === 'csv') {
+        text = await file.text();
+      }
+
+      combined += `\n[파일: ${file.name}]\n${text}\n`;
+      badges.push(`<div class="file-badge" style="margin:4px 2px">✅ ${file.name}</div>`);
+    } catch(e) {
+      badges.push(`<div class="file-badge" style="background:rgba(192,57,43,0.1);color:var(--danger);margin:4px 2px">❌ ${file.name} 오류</div>`);
     }
   }
+
   state.extractedText = combined;
-  document.getElementById('docsBadge').innerHTML = `<div style="color:green; margin-top:10px;">✅ 파일 분석 완료</div>`;
+  document.getElementById('docsBadge').innerHTML = badges.join('');
+
+  const preview = document.getElementById('docsPreview');
+  preview.style.display = 'block';
+  preview.textContent = combined.slice(0, 500) + (combined.length > 500 ? '...' : '');
 }
 
-function switchTab(tab, btn) {
-  document.getElementById('tab-docs').style.display = tab === 'docs' ? 'block' : 'none';
-  document.getElementById('tab-paste').style.display = tab === 'paste' ? 'block' : 'none';
-  document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-  btn.classList.add('active');
+// ── DRAG & DROP ──
+function setupDragDrop(areaId, inputId, handler) {
+  const area = document.getElementById(areaId);
+  area.addEventListener('dragover', e => { e.preventDefault(); area.classList.add('drag-over'); });
+  area.addEventListener('dragleave', () => area.classList.remove('drag-over'));
+  area.addEventListener('drop', e => {
+    e.preventDefault();
+    area.classList.remove('drag-over');
+    const files = e.dataTransfer.files;
+    if (files.length) {
+      const fakeInput = { files };
+      handler(fakeInput);
+    }
+  });
 }
 
+// ── GET INPUT TEXT ──
+function getInputText() {
+  switch(state.activeTab) {
+    case 'record': return state.recordedText;
+    case 'audio': return state.extractedText;
+    case 'docs': return state.extractedText;
+    case 'paste': return document.getElementById('pasteText').value.trim();
+  }
+  return '';
+}
+
+// ── PROMPTS ──
+function getMeetingInfo() {
+  return {
+    date: document.getElementById('meetingDate').value,
+    time: document.getElementById('meetingTime').value,
+    title: document.getElementById('meetingTitle').value || '회의',
+    attendees: document.getElementById('meetingAttendees').value,
+    dept: document.getElementById('meetingDept').value
+  };
+}
+
+function getPrompt(version, text, info) {
+  const header = `회의 정보:
+- 일자: ${info.date} ${info.time}
+- 제목: ${info.title}
+- 참석자: ${info.attendees}
+- 부서: ${info.dept}
+
+회의 내용:
+${text}`;
+
+  const prompts = {
+    detailed: `당신은 대기업 전문 회의록 작성자입니다. 아래 회의 내용을 바탕으로 정밀 회의록을 작성하세요.
+
+${header}
+
+[작성 규칙]
+1. 모든 논의 내용을 빠짐없이 기록
+2. 각 안건별로 H2 제목 사용 (## 안건명)
+3. 각 안건의 세부 내용은 반드시 표(table) 형식 사용
+4. 표 컬럼: 구분 | 내용
+5. Action Items는 별도 표로: 담당 | 내용 | 기한
+6. 맥락과 배경 설명도 포함
+7. 화자의 발언 의도와 결론을 명확히 구분
+8. 마지막에 종합 Action Items 표 작성
+
+출력 형식: HTML 형식으로 작성 (table, h2, ul, li, strong 태그 사용 가능)
+주의: 마크다운 코드블록(```) 없이 순수 HTML만 출력`,
+
+    standard: `당신은 대기업 전문 회의록 작성자입니다. 아래 회의 내용을 바탕으로 일반 회의록을 작성하세요.
+
+${header}
+
+[작성 규칙]
+1. 주요 논의사항을 안건별로 정리
+2. 각 안건별로 H2 제목 사용 (## 안건명)
+3. 각 안건의 핵심 내용을 표(table) 형식으로 작성
+4. 표 컬럼: 구분 | 내용
+5. Action Items는 표로 정리: 담당 | 내용 | 기한
+6. 중요 수치, 결정사항은 bold 처리
+7. 실무자가 바로 활용할 수 있는 수준으로 작성
+
+출력 형식: HTML 형식으로 작성 (table, h2, ul, li, strong 태그 사용)
+주의: 마크다운 코드블록(```) 없이 순수 HTML만 출력`,
+
+    summary: `당신은 대기업 전문 회의록 작성자입니다. 아래 회의 내용을 바탕으로 핵심 요약 회의록을 작성하세요.
+
+${header}
+
+[작성 규칙]
+1. 안건별로 핵심만 bullet point로 간결하게 (2~4개)
+2. 각 안건은 H2 제목 사용
+3. 각 안건 아래 ul/li로 핵심 포인트
+4. Action Items는 표로: 담당 | 내용 | 기한
+5. 임원 보고용 수준의 간결함
+6. 전체 분량 A4 1장 이내
+
+출력 형식: HTML 형식으로 작성 (h2, ul, li, table, strong 태그 사용)
+주의: 마크다운 코드블록(```) 없이 순수 HTML만 출력`
+  };
+
+  return prompts[version];
+}
+
+// ── GENERATE ──
 async function generateMinutes() {
-  const text = state.extractedText || document.getElementById('pasteText').value;
-  if (!text) return alert("데이터를 입력해주세요.");
+  if (!state.claudeKey) {
+    openSettings();
+    return;
+  }
 
-  document.querySelector('.btn-generate').innerText = "⏳ AI 분석 중...";
-  
+  const text = getInputText();
+  if (!text) {
+    alert('회의 내용을 먼저 입력해주세요.\n(녹음, 파일 업로드, 또는 텍스트 입력)');
+    return;
+  }
+
+  const info = getMeetingInfo();
+  const version = state.selectedVersion;
+
+  showLoading('회의록 생성 중...', `Claude AI가 ${version === 'detailed' ? '정밀' : version === 'standard' ? '일반' : '핵심요약'} 회의록을 작성하고 있습니다`);
+
   try {
-    const response = await fetch('/api/analyze', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        contents: [{ parts: [{ text: `
-          # ROLE: 전문 회의록 작성 전문가
-          # TASK: 아래 내용을 바탕으로 회의록을 작성하라. 
-          # FORMAT: 반드시 HTML 태그(h2, table, tr, td, ul, li)를 사용하여 정갈하게 출력하라.
-          
-          [데이터]
-          ${text}
-        ` }] }]
-      })
-    });
+    // Generate all 3 versions in parallel
+    showLoading('회의록 3가지 버전 생성 중...', 'Gemini AI가 동시에 분석하고 있습니다 (잠시 기다려주세요)');
 
-    const data = await response.json();
-    const result = data.candidates[0].content.parts[0].text;
-    
-    document.getElementById('resultContent').innerHTML = result;
-    document.getElementById('resultCard').classList.add('visible');
-  } catch (e) {
-    alert("분석 실패: 서버 설정을 확인하세요.");
-  } finally {
-    document.querySelector('.btn-generate').innerText = "✨ 회의록 생성 시작";
+    const [detailed, standard, summary] = await Promise.all([
+      callClaudeAPI(getPrompt('detailed', text, info)),
+      callClaudeAPI(getPrompt('standard', text, info)),
+      callClaudeAPI(getPrompt('summary', text, info))
+    ]);
+
+    state.generatedVersions = { detailed, standard, summary };
+    displayResult(version, info);
+
+  } catch(e) {
+    hideLoading();
+    alert('회의록 생성 실패: ' + e.message + '\n\nAPI 키를 확인해주세요.');
   }
 }
 
+async function callClaudeAPI(prompt) {
+  const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-pro:generateContent?key=${state.claudeKey}`;
+
+  const response = await fetch(url, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({
+      contents: [{ parts: [{ text: prompt }] }],
+      generationConfig: { temperature: 0.3, maxOutputTokens: 4096 }
+    })
+  });
+
+  if (!response.ok) {
+    const err = await response.json().catch(() => ({}));
+    throw new Error(err.error?.message || `API 오류 (${response.status})`);
+  }
+
+  const data = await response.json();
+  return data.candidates[0].content.parts[0].text;
+}
+
+// ── DISPLAY RESULT ──
+function displayResult(version, info) {
+  hideLoading();
+
+  const versionNames = { detailed: '🔬 정밀 회의록', standard: '📋 일반 회의록', summary: '⚡ 핵심 요약' };
+  document.getElementById('resultVersionBadge').textContent = versionNames[version];
+  document.getElementById('resultMeetingTitle').textContent = info.title || '회의록';
+
+  // Meta info
+  let metaHtml = '';
+  if (info.date) metaHtml += `<div class="result-meta-item">📅 <strong>${info.date}</strong> ${info.time}</div>`;
+  if (info.attendees) metaHtml += `<div class="result-meta-item">👥 <strong>${info.attendees}</strong></div>`;
+  if (info.dept) metaHtml += `<div class="result-meta-item">📁 <strong>${info.dept}</strong></div>`;
+  document.getElementById('resultMeta').innerHTML = metaHtml;
+
+  // Content
+  const content = state.generatedVersions[version] || '';
+  document.getElementById('resultContent').innerHTML = content;
+
+  // Version tabs
+  document.querySelectorAll('.vtab').forEach(t => t.classList.remove('active'));
+  const tabMap = { detailed: 0, standard: 1, summary: 2 };
+  document.querySelectorAll('.vtab')[tabMap[version]].classList.add('active');
+
+  document.getElementById('resultCard').classList.add('visible');
+  document.getElementById('resultCard').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
+function switchResultVersion(version) {
+  if (!state.generatedVersions[version]) return;
+  const versionNames = { detailed: '🔬 정밀 회의록', standard: '📋 일반 회의록', summary: '⚡ 핵심 요약' };
+  document.getElementById('resultVersionBadge').textContent = versionNames[version];
+  document.getElementById('resultContent').innerHTML = state.generatedVersions[version];
+
+  document.querySelectorAll('.vtab').forEach(t => t.classList.remove('active'));
+  const tabMap = { detailed: 0, standard: 1, summary: 2 };
+  document.querySelectorAll('.vtab')[tabMap[version]].classList.add('active');
+
+  if (state.isEditing) {
+    document.getElementById('resultContent').contentEditable = 'true';
+  }
+}
+
+// ── EDIT ──
+function toggleEdit() {
+  state.isEditing = !state.isEditing;
+  const content = document.getElementById('resultContent');
+  const btn = document.getElementById('editBtn');
+  content.contentEditable = state.isEditing ? 'true' : 'false';
+  btn.classList.toggle('active', state.isEditing);
+  btn.textContent = state.isEditing ? '💾 저장' : '✏️ 수정';
+  if (!state.isEditing) {
+    // Save edited content
+    const activeVersion = document.querySelector('.vtab.active');
+    const vMap = ['detailed', 'standard', 'summary'];
+    const tabs = document.querySelectorAll('.vtab');
+    tabs.forEach((t, i) => { if (t.classList.contains('active')) state.generatedVersions[vMap[i]] = content.innerHTML; });
+  }
+}
+
+// ── EXPORT PDF ──
+async function exportPDF() {
+  const { jsPDF } = window.jspdf;
+  const info = getMeetingInfo();
+  const content = document.getElementById('resultContent');
+
+  // Use html2canvas approach via jsPDF html method
+  const doc = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+
+  // Add Korean font support note - using default font with UTF-8
+  const title = info.title || '회의록';
+  const dateStr = `${info.date} ${info.time}`;
+
+  // Create a temporary styled div for PDF rendering
+  const tempDiv = document.createElement('div');
+  tempDiv.style.cssText = `
+    width: 700px; padding: 40px; font-family: 'Noto Sans KR', sans-serif;
+    background: white; color: #1a1a2e; font-size: 14px; line-height: 1.8;
+  `;
+  tempDiv.innerHTML = `
+    <div style="border-bottom: 3px solid #0f1f3d; padding-bottom: 16px; margin-bottom: 24px;">
+      <h1 style="font-size:22px;color:#0f1f3d;margin-bottom:8px;">${title}</h1>
+      <div style="font-size:13px;color:#555;">
+        ${info.date ? `📅 ${info.date} ${info.time}` : ''} 
+        ${info.attendees ? `&nbsp;|&nbsp; 👥 ${info.attendees}` : ''}
+        ${info.dept ? `&nbsp;|&nbsp; 📁 ${info.dept}` : ''}
+      </div>
+    </div>
+    ${content.innerHTML}
+  `;
+  tempDiv.querySelectorAll('table').forEach(t => {
+    t.style.cssText = 'width:100%;border-collapse:collapse;margin:12px 0;font-size:12px;';
+    t.querySelectorAll('th').forEach(th => th.style.cssText = 'background:#0f1f3d;color:white;padding:8px 12px;text-align:left;');
+    t.querySelectorAll('td').forEach(td => td.style.cssText = 'padding:8px 12px;border-bottom:1px solid #eee;');
+  });
+
+  document.body.appendChild(tempDiv);
+  try {
+    await doc.html(tempDiv, {
+      callback: (d) => { d.save(`회의록_${title}_${info.date}.pdf`); },
+      x: 10, y: 10, width: 190, windowWidth: 700
+    });
+  } catch(e) {
+    alert('PDF 저장 중 오류가 발생했습니다.\nWord로 저장 후 PDF 변환을 권장합니다.');
+  }
+  document.body.removeChild(tempDiv);
+}
+
+// ── EXPORT WORD ──
 function exportWord() {
+  const info = getMeetingInfo();
+  const title = info.title || '회의록';
   const content = document.getElementById('resultContent').innerHTML;
-  const blob = new Blob(['<html><body>' + content + '</body></html>'], { type: 'application/msword' });
-  const link = document.createElement('a');
-  link.href = URL.createObjectURL(blob);
-  link.download = 'Coway_Meeting_Minutes.doc';
-  link.click();
+
+  const htmlContent = `
+    <!DOCTYPE html>
+    <html xmlns:o="urn:schemas-microsoft-com:office:office"
+          xmlns:w="urn:schemas-microsoft-com:office:word"
+          xmlns="http://www.w3.org/TR/REC-html40">
+    <head>
+      <meta charset="UTF-8">
+      <title>${title}</title>
+      <!--[if gte mso 9]>
+      <xml><w:WordDocument><w:View>Print</w:View></w:WordDocument></xml>
+      <![endif]-->
+      <style>
+        body { font-family: '맑은 고딕', sans-serif; font-size: 10pt; color: #1a1a2e; }
+        h1 { font-size: 16pt; color: #0f1f3d; border-bottom: 2px solid #0f1f3d; padding-bottom: 6pt; }
+        h2 { font-size: 12pt; color: #0f1f3d; border-bottom: 1px solid #ccc; margin-top: 14pt; }
+        .meta { font-size: 9pt; color: #555; margin-bottom: 14pt; }
+        table { width: 100%; border-collapse: collapse; margin: 8pt 0; font-size: 9pt; }
+        th { background: #0f1f3d; color: white; padding: 5pt 8pt; text-align: left; }
+        td { padding: 5pt 8pt; border: 1px solid #ddd; }
+        ul { margin: 4pt 0 8pt 16pt; }
+        li { margin-bottom: 3pt; }
+      </style>
+    </head>
+    <body>
+      <h1>${title}</h1>
+      <div class="meta">
+        ${info.date ? `일자: ${info.date} ${info.time}` : ''}
+        ${info.attendees ? `&nbsp;&nbsp;|&nbsp;&nbsp;참석: ${info.attendees}` : ''}
+        ${info.dept ? `&nbsp;&nbsp;|&nbsp;&nbsp;부서: ${info.dept}` : ''}
+      </div>
+      ${content}
+    </body>
+    </html>
+  `;
+
+  const blob = new Blob([htmlContent], { type: 'application/msword;charset=utf-8' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `회의록_${title}_${info.date}.doc`;
+  a.click();
+  URL.revokeObjectURL(url);
+}
+
+// ── LOADING ──
+function showLoading(text, sub) {
+  document.getElementById('loadingText').textContent = text;
+  document.getElementById('loadingSubText').textContent = sub;
+  document.getElementById('loadingOverlay').classList.add('active');
+}
+function hideLoading() {
+  document.getElementById('loadingOverlay').classList.remove('active');
 }
 </script>
 </body>
