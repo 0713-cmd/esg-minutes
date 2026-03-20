@@ -136,6 +136,42 @@ main { max-width: 1100px; margin: 0 auto; padding: 40px 32px; }
   .card { padding: 24px 20px; }
 }
 
+/* ── 채팅 수정 기능 ── */
+.chat-refine {
+  margin-top: 32px; padding-top: 28px;
+  border-top: 2px dashed var(--gray-200);
+}
+.chat-title {
+  font-family: 'Noto Serif KR', serif; font-size: 15px; font-weight: 700;
+  color: var(--navy); margin-bottom: 16px;
+}
+.chat-history {
+  display: flex; flex-direction: column; gap: 12px;
+  margin-bottom: 16px; max-height: 320px; overflow-y: auto;
+}
+.chat-bubble { padding: 12px 16px; border-radius: 14px; font-size: 13px; line-height: 1.6; max-width: 85%; }
+.chat-bubble.user { background: var(--navy); color: var(--white); align-self: flex-end; border-bottom-right-radius: 4px; }
+.chat-bubble.ai { background: var(--gray-100); color: var(--text); align-self: flex-start; border-bottom-left-radius: 4px; }
+.chat-bubble.ai.loading { color: var(--gray-400); font-style: italic; }
+.chat-input-row { display: flex; gap: 10px; align-items: flex-end; }
+.chat-input {
+  flex: 1; padding: 14px 16px; border: 1.5px solid var(--gray-200); border-radius: 14px;
+  font-family: 'Noto Sans KR', sans-serif; font-size: 14px; line-height: 1.6;
+  color: var(--text); resize: none; min-height: 56px; max-height: 120px;
+  transition: border-color 0.2s; overflow-y: auto;
+}
+.chat-input:focus { outline: none; border-color: var(--navy-mid); }
+.chat-send {
+  background: linear-gradient(135deg, var(--navy), var(--navy-mid));
+  color: var(--white); border: none; padding: 14px 22px; border-radius: 12px;
+  font-size: 14px; font-weight: 700; font-family: 'Noto Sans KR', sans-serif;
+  cursor: pointer; white-space: nowrap; transition: all 0.2s;
+  box-shadow: 0 4px 14px rgba(15,31,61,0.25);
+}
+.chat-send:hover { transform: translateY(-1px); box-shadow: 0 6px 18px rgba(15,31,61,0.3); }
+.chat-send:disabled { opacity: 0.6; cursor: not-allowed; transform: none; }
+.chat-hint { font-size: 11px; color: var(--gray-400); margin-top: 8px; }
+
 /* ── 인쇄 전용 스타일 (PDF 저장용) ── */
 #printArea { display: none; }
 @media print {
@@ -302,6 +338,19 @@ main { max-width: 1100px; margin: 0 auto; padding: 40px 32px; }
       <button class="vtab" onclick="showVersion('summary')">⚡ 핵심요약</button>
     </div>
     <div id="resultContent"></div>
+
+    <!-- 💬 채팅 수정 기능 -->
+    <div class="chat-refine" id="chatRefine">
+      <div class="chat-title">💬 회의록 수정 요청</div>
+      <div class="chat-history" id="chatHistory"></div>
+      <div class="chat-input-row">
+        <textarea class="chat-input" id="chatInput"
+          placeholder="예) Action Items 담당자를 더 구체적으로 써줘&#10;예) 전체 톤을 더 공식적으로 바꿔줘&#10;예) ESG 관련 내용만 따로 정리해줘"
+          onkeydown="handleChatKey(event)"></textarea>
+        <button class="chat-send" id="chatSendBtn" onclick="sendChatRefine()">✨ 수정 요청</button>
+      </div>
+      <p class="chat-hint">현재 보이는 버전 기준으로 수정됩니다 · Enter+Shift로 줄바꿈 · Enter로 전송</p>
+    </div>
   </div>
 
 </main>
@@ -628,6 +677,83 @@ function exportWord() {
   a.click();
   document.body.removeChild(a);
   URL.revokeObjectURL(a.href);
+}
+
+// ── 채팅 수정 기능 ──
+function handleChatKey(e) {
+  if (e.key === 'Enter' && !e.shiftKey) {
+    e.preventDefault();
+    sendChatRefine();
+  }
+}
+
+async function sendChatRefine() {
+  const input = document.getElementById('chatInput');
+  const request = input.value.trim();
+  if (!request) return;
+
+  // 현재 보이는 버전의 회의록 가져오기
+  const currentContent = document.getElementById('resultContent').innerHTML;
+  if (!currentContent) { alert('먼저 회의록을 생성해주세요.'); return; }
+
+  // 사용자 메시지 표시
+  addChatBubble('user', request);
+  input.value = '';
+  input.style.height = 'auto';
+
+  // 로딩 버블
+  const loadingId = 'loading-' + Date.now();
+  addChatBubble('ai', 'Gemini가 수정하고 있습니다...', loadingId, true);
+  document.getElementById('chatSendBtn').disabled = true;
+
+  try {
+    const prompt = `당신은 전문 회의록 편집자입니다. 아래 회의록을 사용자 요청에 따라 수정해주세요.
+
+[현재 회의록 HTML]
+${currentContent}
+
+[사용자 수정 요청]
+${request}
+
+[수정 규칙]
+1. 요청한 부분만 수정하고 나머지는 그대로 유지
+2. 기존 HTML 구조(h2, table, ul 등) 그대로 유지
+3. 순수 HTML만 출력 (마크다운 코드블록 없이)
+4. 수정 완료된 전체 회의록 HTML을 출력`;
+
+    const revised = await callGeminiAPI(prompt);
+
+    // 로딩 버블 제거 후 수정 완료 메시지
+    const loadingEl = document.getElementById(loadingId);
+    if (loadingEl) loadingEl.remove();
+    addChatBubble('ai', '✅ 수정 완료! 회의록이 업데이트되었습니다.');
+
+    // 현재 보이는 버전 업데이트
+    document.getElementById('resultContent').innerHTML = revised;
+
+    // 현재 활성 버전에 저장
+    const vMap = ['detailed', 'standard', 'summary'];
+    document.querySelectorAll('.vtab').forEach((t, i) => {
+      if (t.classList.contains('active')) state.generatedVersions[vMap[i]] = revised;
+    });
+
+  } catch (e) {
+    const loadingEl = document.getElementById(loadingId);
+    if (loadingEl) loadingEl.remove();
+    addChatBubble('ai', '❌ 수정 실패: ' + e.message);
+  } finally {
+    document.getElementById('chatSendBtn').disabled = false;
+  }
+}
+
+function addChatBubble(role, text, id = null, isLoading = false) {
+  const history = document.getElementById('chatHistory');
+  const div = document.createElement('div');
+  div.className = `chat-bubble ${role}${isLoading ? ' loading' : ''}`;
+  div.textContent = text;
+  if (id) div.id = id;
+  history.appendChild(div);
+  history.scrollTop = history.scrollHeight;
 }
 
 function showLoading(text, sub) {
