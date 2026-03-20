@@ -11,39 +11,28 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@300;400;500;600;700&family=Noto+Serif+KR:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  /* 차장님 파일의 CSS 스타일 그대로 유지 */
   :root {
-    --navy: #0f1f3d; --navy-mid: #1a3260; --navy-light: #243d73;
-    --gold: #c9a84c; --gold-light: #e8c97a; --cream: #f8f5ef;
-    --white: #ffffff; --gray-100: #f4f4f6; --gray-200: #e8e8ec;
-    --gray-400: #9999aa; --gray-600: #555566; --text: #1a1a2e;
-    --success: #2e7d52; --danger: #c0392b;
-    --shadow: 0 4px 24px rgba(15,31,61,0.12);
-    --shadow-lg: 0 12px 48px rgba(15,31,61,0.18);
+    --navy: #0f1f3d; --navy-mid: #1a3260; --gold: #c9a84c; --gold-light: #e8c97a;
+    --cream: #f8f5ef; --white: #ffffff; --gray-100: #f4f4f6; --gray-200: #e8e8ec;
+    --text: #1a1a2e; --shadow: 0 4px 24px rgba(15,31,61,0.12);
   }
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body { font-family: 'Noto Sans KR', sans-serif; background: var(--cream); color: var(--text); min-height: 100vh; }
-  header { background: var(--navy); padding: 0; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(0,0,0,0.3); }
-  .header-inner { max-width: 1200px; margin: 0 auto; padding: 18px 32px; display: flex; align-items: center; justify-content: space-between; }
+  header { background: var(--navy); padding: 18px 32px; position: sticky; top: 0; z-index: 100; box-shadow: 0 2px 20px rgba(0,0,0,0.3); }
+  .header-inner { max-width: 1200px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; }
   .logo { display: flex; align-items: center; gap: 14px; }
   .logo-icon { width: 40px; height: 40px; background: linear-gradient(135deg, var(--gold), var(--gold-light)); border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
-  .logo-text { font-family: 'Noto Serif KR', serif; font-size: 20px; font-weight: 700; color: var(--white); letter-spacing: -0.3px; }
-  .logo-sub { font-size: 11px; color: var(--gold-light); font-weight: 300; letter-spacing: 1px; text-transform: uppercase; margin-top: 2px; }
-  /* ... (이하 모든 CSS 원본 100% 동일) ... */
+  .logo-text { font-family: 'Noto Serif KR', serif; font-size: 20px; font-weight: 700; color: var(--white); }
+  .logo-sub { font-size: 11px; color: var(--gold-light); text-transform: uppercase; }
   main { max-width: 1200px; margin: 0 auto; padding: 40px 32px; }
-  .meeting-info-card { background: var(--white); border-radius: 20px; padding: 32px 36px; margin-bottom: 28px; box-shadow: var(--shadow); border: 1px solid rgba(201,168,76,0.2); }
-  .card-title { font-family: 'Noto Serif KR', serif; font-size: 16px; font-weight: 700; color: var(--navy); margin-bottom: 24px; display: flex; align-items: center; gap: 10px; }
-  .card-title::before { content: ''; display: inline-block; width: 4px; height: 18px; background: linear-gradient(to bottom, var(--gold), var(--gold-light)); border-radius: 2px; }
+  .card { background: var(--white); border-radius: 20px; padding: 32px; margin-bottom: 28px; box-shadow: var(--shadow); border: 1px solid rgba(201,168,76,0.2); }
   .info-grid { display: grid; grid-template-columns: 1fr 1fr 2fr; gap: 16px; }
-  .input-card { background: var(--white); border-radius: 20px; padding: 32px 36px; margin-bottom: 28px; box-shadow: var(--shadow); }
   .tab-bar { display: flex; gap: 6px; margin-bottom: 28px; background: var(--gray-100); padding: 5px; border-radius: 14px; }
-  .tab-btn { flex: 1; padding: 11px 8px; border: none; background: transparent; border-radius: 10px; font-family: 'Noto Sans KR', sans-serif; font-size: 13px; font-weight: 500; color: var(--gray-600); cursor: pointer; transition: all 0.25s; display: flex; align-items: center; justify-content: center; gap: 6px; }
-  .tab-btn.active { background: var(--navy); color: var(--white); box-shadow: 0 2px 10px rgba(15,31,61,0.25); }
-  .tab-panel { display: none; }
-  .tab-panel.active { display: block; }
-  .upload-area { border: 2px dashed var(--gray-200); border-radius: 16px; padding: 48px 24px; text-align: center; cursor: pointer; position: relative; }
-  .btn-generate { background: linear-gradient(135deg, var(--navy), var(--navy-mid)); color: var(--white); border: none; padding: 18px 56px; border-radius: 50px; font-size: 16px; font-weight: 700; cursor: pointer; box-shadow: 0 6px 24px rgba(15,31,61,0.3); }
-  .result-card { background: var(--white); border-radius: 20px; padding: 36px 40px; box-shadow: var(--shadow); display: none; border: 1px solid rgba(201,168,76,0.25); }
+  .tab-btn { flex: 1; padding: 11px; border: none; background: transparent; border-radius: 10px; cursor: pointer; }
+  .tab-btn.active { background: var(--navy); color: white; }
+  .upload-area { border: 2px dashed var(--gray-200); border-radius: 16px; padding: 48px; text-align: center; cursor: pointer; }
+  .btn-generate { background: linear-gradient(135deg, var(--navy), var(--navy-mid)); color: white; padding: 18px 56px; border-radius: 50px; font-weight: 700; cursor: pointer; border: none; width: 100%; font-size: 18px; }
+  .result-card { background: white; border-radius: 20px; padding: 40px; box-shadow: var(--shadow); display: none; margin-top: 30px; }
   .result-card.visible { display: block; }
 </style>
 </head>
@@ -51,46 +40,57 @@
 
 <header>
   <div class="header-inner">
-    <div class="logo"><div class="logo-icon">📋</div><div><div class="logo-text">회의록 자동생성</div><div class="logo-sub">AI Meeting Minutes Generator</div></div></div>
+    <div class="logo">
+      <div class="logo-icon">📋</div>
+      <div>
+        <div class="logo-text">회의록 자동생성</div>
+        <div class="logo-sub">AI Meeting Minutes Generator</div>
+      </div>
+    </div>
   </div>
 </header>
 
 <main>
-  <div class="meeting-info-card">
-    <div class="card-title">회의 기본 정보</div>
+  <div class="card">
     <div class="info-grid">
-      <div class="info-field"><label>📅 회의 일자</label><input type="date" id="meetingDate" /></div>
-      <div class="info-field"><label>🕐 시간</label><input type="time" id="meetingTime" /></div>
-      <div class="info-field"><label>📌 회의 제목</label><input type="text" id="meetingTitle" placeholder="예) 2024 동반성장 밸류업 실무자과정" /></div>
+      <div style="grid-column: span 3; font-weight: bold; margin-bottom: 10px;">📅 회의 기본 정보</div>
+      <input type="date" id="meetingDate">
+      <input type="time" id="meetingTime">
+      <input type="text" id="meetingTitle" placeholder="회의 제목 입력">
+      <input type="text" id="meetingAttendees" placeholder="참석자 입력" style="grid-column: span 3; margin-top: 10px;">
     </div>
   </div>
 
-  <div class="input-card">
+  <div class="card">
     <div class="tab-bar">
-      <button class="tab-btn" onclick="switchTab('docs', this)">📄 자료 업로드</button>
-      <button class="tab-btn active" onclick="switchTab('paste', this)">✏️ 텍스트 입력</button>
+      <button class="tab-btn active" onclick="switchTab('docs', this)">📄 자료 업로드</button>
+      <button class="tab-btn" onclick="switchTab('paste', this)">✏️ 직접 입력</button>
     </div>
-    <div class="tab-panel active" id="tab-paste">
-      <textarea id="pasteText" style="width:100%; height:200px; border-radius:12px; padding:15px;" placeholder="내용을 입력하세요..."></textarea>
-    </div>
-    <div class="tab-panel" id="tab-docs">
+    <div id="tab-docs" class="tab-panel active">
       <div class="upload-area" onclick="document.getElementById('docsFile').click()">
-        <input type="file" id="docsFile" multiple hidden onchange="handleDocsFile(this)">
-        <div class="upload-title">파일을 클릭하여 업로드하세요</div>
+        <input type="file" id="docsFile" accept=".docx,.xlsx,.txt" multiple onchange="handleDocsFile(this)">
+        <div class="upload-title">워드나 엑셀 파일을 여기에 올리세요</div>
         <div id="docsBadge"></div>
       </div>
     </div>
+    <div id="tab-paste" class="tab-panel" style="display:none;">
+      <textarea id="pasteText" style="width:100%; height:200px; border-radius:12px; padding:15px;" placeholder="내용을 입력하세요..."></textarea>
+    </div>
   </div>
 
-  <div style="text-align:center;"><button class="btn-generate" onclick="generateMinutes()">✨ 회의록 생성</button></div>
+  <button class="btn-generate" onclick="generateMinutes()">✨ 회의록 생성 시작</button>
 
   <div class="result-card" id="resultCard">
-    <div id="resultContent"></div>
+    <div id="resultContent" style="line-height:1.8;"></div>
+    <div style="margin-top:20px; display:flex; gap:10px;">
+      <button onclick="exportWord()" style="padding:10px 20px; border-radius:8px; cursor:pointer; background:#2155a0; color:white; border:none;">📝 Word 저장</button>
+      <button onclick="window.print()" style="padding:10px 20px; border-radius:8px; cursor:pointer;">📥 PDF 인쇄</button>
+    </div>
   </div>
 </main>
 
 <script>
-let state = { extractedText: '' };
+let state = { extractedText: '', selectedVersion: 'standard' };
 
 async function handleDocsFile(input) {
   const files = input.files;
@@ -109,47 +109,57 @@ async function handleDocsFile(input) {
     }
   }
   state.extractedText = combined;
-  document.getElementById('docsBadge').innerHTML = `<div style="color:green;margin-top:10px;">✅ 파일 분석 완료</div>`;
+  document.getElementById('docsBadge').innerHTML = `<div style="color:green; margin-top:10px;">✅ 파일 분석 완료</div>`;
 }
 
 function switchTab(tab, btn) {
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  document.getElementById('tab-' + tab).classList.add('active');
+  document.getElementById('tab-docs').style.display = tab === 'docs' ? 'block' : 'none';
+  document.getElementById('tab-paste').style.display = tab === 'paste' ? 'block' : 'none';
   document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
   btn.classList.add('active');
 }
 
-// ── 핵심: API 키가 들어있는 버셀 서버로 데이터 전송 ──
 async function generateMinutes() {
   const text = state.extractedText || document.getElementById('pasteText').value;
   if (!text) return alert("데이터를 입력해주세요.");
 
-  document.querySelector('.btn-generate').innerText = "⏳ 생성 중...";
-
+  document.querySelector('.btn-generate').innerText = "⏳ AI 분석 중...";
+  
   try {
-    // [중요] 외부 URL이 아닌, 차장님의 버셀 서버(/api/analyze)로 보냅니다.
     const response = await fetch('/api/analyze', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
         contents: [{ parts: [{ text: `
-# ROLE: 전문 회의록 작성 전문가
-# TASK: 아래 내용을 바탕으로 회의록을 작성하라.
-# FORMAT: 반드시 HTML 태그(table, h2, ul, li)를 사용하라.
-
-[데이터]
-${text}` }] }]
+          # ROLE: 전문 회의록 작성 전문가
+          # TASK: 아래 내용을 바탕으로 회의록을 작성하라. 
+          # FORMAT: 반드시 HTML 태그(h2, table, tr, td, ul, li)를 사용하여 정갈하게 출력하라.
+          
+          [데이터]
+          ${text}
+        ` }] }]
       })
     });
 
     const data = await response.json();
-    document.getElementById('resultContent').innerHTML = data.candidates[0].content.parts[0].text;
+    const result = data.candidates[0].content.parts[0].text;
+    
+    document.getElementById('resultContent').innerHTML = result;
     document.getElementById('resultCard').classList.add('visible');
   } catch (e) {
-    alert("오류 발생: 버셀의 환경 변수 설정을 확인하세요.");
+    alert("분석 실패: 서버 설정을 확인하세요.");
   } finally {
-    document.querySelector('.btn-generate').innerText = "✨ 회의록 생성";
+    document.querySelector('.btn-generate').innerText = "✨ 회의록 생성 시작";
   }
+}
+
+function exportWord() {
+  const content = document.getElementById('resultContent').innerHTML;
+  const blob = new Blob(['<html><body>' + content + '</body></html>'], { type: 'application/msword' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'Coway_Meeting_Minutes.doc';
+  link.click();
 }
 </script>
 </body>
