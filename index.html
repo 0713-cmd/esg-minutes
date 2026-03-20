@@ -642,23 +642,18 @@
   </div>
 </header>
 
-<!-- SETTINGS MODAL -->
+<!-- SETTINGS MODAL (Whisper 키만) -->
 <div class="modal-overlay" id="settingsModal">
   <div class="modal">
     <h3>🔑 API 키 설정</h3>
     <p class="sub">
-      회의록 생성을 위해 API 키가 필요합니다.<br>
-      입력된 키는 브라우저 로컬에만 저장되며 외부로 전송되지 않습니다.
+      Gemini API 키는 Vercel 서버에 등록되어 있습니다.<br>
+      음성파일 업로드 기능 사용 시에만 OpenAI Whisper 키가 필요합니다.
     </p>
     <div class="modal-field">
-      <label>Google Gemini API 키 <span style="color:var(--danger)">*필수</span></label>
-      <input type="password" id="claudeKeyInput" placeholder="AIza..." />
-      <div class="hint">→ aistudio.google.com 에서 발급 (무료 티어 있음)</div>
-    </div>
-    <div class="modal-field">
-      <label>OpenAI Whisper API 키 <span style="color:var(--gray-400)">(음성파일 업로드 시 필요)</span></label>
+      <label>OpenAI Whisper API 키 <span style="color:var(--gray-400)">(음성파일 업로드 시만 필요)</span></label>
       <input type="password" id="openaiKeyInput" placeholder="sk-..." />
-      <div class="hint">→ platform.openai.com 에서 발급 / 음성파일 업로드 기능 사용 시만 필요</div>
+      <div class="hint">→ platform.openai.com 에서 발급</div>
     </div>
     <div class="modal-actions">
       <button class="btn-cancel" onclick="closeSettings()">취소</button>
@@ -677,9 +672,7 @@
 <!-- MAIN -->
 <main>
 
-  <div class="alert warning show" id="apiWarning">
-    ⚠️ API 키가 설정되지 않았습니다. 우측 상단 <strong>API 키 설정</strong>을 클릭해 Gemini API 키를 입력해주세요.
-  </div>
+  <!-- API는 Vercel 서버에서 처리 -->
 
   <!-- 1. 회의 정보 -->
   <div class="meeting-info-card">
@@ -832,7 +825,6 @@
 <script>
 // ── STATE ──
 let state = {
-  claudeKey: '',
   openaiKey: '',
   activeTab: 'paste',
   selectedVersion: 'standard',
@@ -849,23 +841,18 @@ let state = {
 
 // ── INIT ──
 document.addEventListener('DOMContentLoaded', () => {
-  state.claudeKey = localStorage.getItem('claude_api_key') || '';
   state.openaiKey = localStorage.getItem('openai_api_key') || '';
-  if (state.claudeKey) document.getElementById('apiWarning').classList.remove('show');
 
-  // Set today's date and current time
   const now = new Date();
   document.getElementById('meetingDate').value = now.toISOString().split('T')[0];
   document.getElementById('meetingTime').value = now.toTimeString().slice(0,5);
 
-  // Drag & drop
   setupDragDrop('audioUploadArea', 'audioFile', handleAudioFile);
   setupDragDrop('docsUploadArea', 'docsFile', handleDocsFile);
 });
 
 // ── SETTINGS ──
 function openSettings() {
-  document.getElementById('claudeKeyInput').value = state.claudeKey;
   document.getElementById('openaiKeyInput').value = state.openaiKey;
   document.getElementById('settingsModal').classList.add('active');
 }
@@ -873,14 +860,9 @@ function closeSettings() {
   document.getElementById('settingsModal').classList.remove('active');
 }
 function saveSettings() {
-  state.claudeKey = document.getElementById('claudeKeyInput').value.trim();
   state.openaiKey = document.getElementById('openaiKeyInput').value.trim();
-  localStorage.setItem('claude_api_key', state.claudeKey);
   localStorage.setItem('openai_api_key', state.openaiKey);
   closeSettings();
-  if (state.claudeKey) {
-    document.getElementById('apiWarning').classList.remove('show');
-  }
 }
 
 // ── TABS ──
@@ -1138,10 +1120,6 @@ ${header}
 
 // ── GENERATE ──
 async function generateMinutes() {
-  // API 키 체크 로직 삭제 (Vercel 서버의 키를 사용하므로 필요 없음)
-  const text = getInputText();
-  // ...
-
   const text = getInputText();
   if (!text) {
     alert('회의 내용을 먼저 입력해주세요.\n(녹음, 파일 업로드, 또는 텍스트 입력)');
@@ -1151,16 +1129,13 @@ async function generateMinutes() {
   const info = getMeetingInfo();
   const version = state.selectedVersion;
 
-  showLoading('회의록 생성 중...', `Claude AI가 ${version === 'detailed' ? '정밀' : version === 'standard' ? '일반' : '핵심요약'} 회의록을 작성하고 있습니다`);
+  showLoading('회의록 3가지 버전 생성 중...', 'Gemini AI가 분석하고 있습니다 (잠시 기다려주세요)');
 
   try {
-    // Generate all 3 versions in parallel
-    showLoading('회의록 3가지 버전 생성 중...', 'Gemini AI가 동시에 분석하고 있습니다 (잠시 기다려주세요)');
-
     const [detailed, standard, summary] = await Promise.all([
-      callClaudeAPI(getPrompt('detailed', text, info)),
-      callClaudeAPI(getPrompt('standard', text, info)),
-      callClaudeAPI(getPrompt('summary', text, info))
+      callGeminiAPI(getPrompt('detailed', text, info)),
+      callGeminiAPI(getPrompt('standard', text, info)),
+      callGeminiAPI(getPrompt('summary', text, info))
     ]);
 
     state.generatedVersions = { detailed, standard, summary };
@@ -1168,12 +1143,13 @@ async function generateMinutes() {
 
   } catch(e) {
     hideLoading();
-    alert('회의록 생성 실패: ' + e.message + '\n\nAPI 키를 확인해주세요.');
+    alert('회의록 생성 실패: ' + e.message);
   }
 }
 
-async function callClaudeAPI(prompt) {
-  // Vercel 백엔드(/api/analyze)로 데이터를 던집니다. 서버에 등록한 API 키가 자동으로 사용됩니다.
+// ── VERCEL 서버리스 함수 호출 (api/analyze.js) ──
+// ── /api/analyze.js 연결 (Vercel 서버리스) ──
+async function callGeminiAPI(prompt) {
   const response = await fetch('/api/analyze', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1182,9 +1158,14 @@ async function callClaudeAPI(prompt) {
     })
   });
 
-  if (!response.ok) throw new Error(`연결 실패 (${response.status})`);
+  // analyze.js는 오류도 status 200으로 반환하므로 data.error 체크
   const data = await response.json();
-  return data.candidates[0].content.parts[0].text;
+  if (data.error) throw new Error(data.error);
+
+  // Gemini raw 응답 파싱: candidates[0].content.parts[0].text
+  const text = data.candidates?.[0]?.content?.parts?.[0]?.text;
+  if (!text) throw new Error('응답을 받지 못했습니다. Vercel 함수 또는 API 키를 확인해주세요.');
+  return text;
 }
 
 // ── DISPLAY RESULT ──
