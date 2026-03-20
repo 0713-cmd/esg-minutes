@@ -1138,10 +1138,9 @@ ${header}
 
 // ── GENERATE ──
 async function generateMinutes() {
-  if (!state.claudeKey) {
-    openSettings();
-    return;
-  }
+  // API 키 체크 로직 삭제 (Vercel 서버의 키를 사용하므로 필요 없음)
+  const text = getInputText();
+  // ...
 
   const text = getInputText();
   if (!text) {
@@ -1174,7 +1173,7 @@ async function generateMinutes() {
 }
 
 async function callClaudeAPI(prompt) {
-  // Vercel 서버리스 함수(/api/analyze)를 통해 차장님의 API 키와 안전하게 연결합니다.
+  // Vercel 백엔드(/api/analyze)로 데이터를 던집니다. 서버에 등록한 API 키가 자동으로 사용됩니다.
   const response = await fetch('/api/analyze', {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -1183,10 +1182,7 @@ async function callClaudeAPI(prompt) {
     })
   });
 
-  if (!response.ok) {
-    throw new Error(`API 연결 실패 (Status: ${response.status})`);
-  }
-
+  if (!response.ok) throw new Error(`연결 실패 (${response.status})`);
   const data = await response.json();
   return data.candidates[0].content.parts[0].text;
 }
